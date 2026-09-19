@@ -1,0 +1,20 @@
+// The summary rows use vanilla's InfoRow for label/value layout; this only keeps a value's parts
+// on one line. Engine default is column, so a value made of LocalizedNumber elements and text
+// would otherwise stack (the same trap the row stats hit).
+.value {
+    display: flex;
+    flex-direction: row;
+    align-items: baseline;
+    white-space: pre;
+}
+
+// Past the comfortable load: the game's own warning colour, so it reads like every other
+// "this needs attention" figure in the panel.
+.overloaded {
+    color: var(--warningColor);
+}
+
+.hint {
+    opacity: 0.8;
+    font-size: 0.9em;
+}

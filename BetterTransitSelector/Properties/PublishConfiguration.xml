@@ -1,0 +1,104 @@
+<Publish>
+	<!--Id must be set in order to update existed mod. it is not required for publishing mod for the first time-->
+	
+	<ModId Value="158942" />
+	<!--Name of the mod to display to players-->
+	<DisplayName Value="Better Transit Selector" />
+	<!--Short description of the mod-->
+	<ShortDescription Value="Reworks the vehicle picker on transport lines: search, sorting, filters, grouped variants, bigger icons and consist stats" />
+	<!--Long description of the mod. Single line or multi line. Supports minimal markdown subset-->
+	<LongDescription># Better Transit Selector
+
+## A vehicle picker that scales with your subscriptions
+
+The vanilla "Select carriage model" list inside a transport line's info panel is fine with a handful of vanilla vehicles. With a modded subscription list it turns into an unsorted, unsearchable scroll of dozens of near-identical names, each with an icon too small to read. This mod replaces that list with one built for large collections.
+
+### Included features
+
+- **Search** - a text box above the list filters as you type. Matches the vehicle name, its author and its pack, so "REV0" or "bwegt" finds the whole pack. Appears once the list is long enough to need it.
+- **Sorting and filtering** - the funnel button beside the list opens a panel. Sort by game order, name, newest, oldest, fastest, most passengers or longest; filter by source (vanilla / modded), theme (European / North American), power type, author, country of operation, minimum passengers, minimum speed, and - on train and subway lines - whether the consist fits the line's shortest platform. The list stays open while you work in the panel, and the funnel lights up while a filter is active so a short list never hides its reason.
+- **Favourites** - star any vehicle, family or pack in the list. The star button beside the list opens a Favourites panel listing them by category, with the same checkboxes, so your regular fleet is one click away on every line. Favourites are saved per player, not per save.
+- **Recently used** - the last three vehicles you picked sit at the top of the list under their own heading. The order is fixed while the list is open, so picking one does not reshuffle the others.
+- **Grouping** - vehicles uploaded together are one collapsible group, headed by the upload's published name with its author and date, and with a checkbox that selects or clears the whole pack. Variants of one model (lengths, liveries, formations) are grouped again inside, and creators can file several uploads under one shared heading - one folder for a whole operator or brand, whoever published the models.
+- **Bigger icons and two-line rows** - each row shows a larger thumbnail, the name on line one and the stats on line two, so the information creators put into their thumbnails is readable. Click anywhere on a row to toggle it.
+- **Consist stats** - each row shows the vehicle's stats for the whole consist, not just the head car. Max speed and passengers are on by default; acceleration, braking, energy type, carriage count and length can be switched on in the options. Hover a row for a tooltip with everything, including the countries the creator says it runs in. A warning marker flags a consist longer than the line's shortest platform. Units follow the game's unit setting, with a separate speed-unit option for players who run metric but think in mph.
+- **Line summary** - under the picker: the fleet the line has and wants, the passengers per departure for your current mix, the total fleet capacity, and the line's load - now, and as it would be with your selection. Hover any vehicle to see the load it would give this line and how many of it the line would need.
+- **Pack and vehicle pages** (optional, under Advanced in the options) - an info button on a pack header opens the upload's page beside the list: cover, author, subscribers, likes, size, description, screenshots, dependencies, links and its vehicles as pickable rows, from the game's own mod-browser data. An info button on a vehicle row opens the vehicle's page: big thumbnail, description, every stat, the consist car by car, countries, load on this line and the asset file.
+- **Display options** - the width and height of the list and of the favourites panel are adjustable in the mod's options.
+
+Requires **Unified Icon Library** for the star icons.
+
+### For asset creators
+
+Nothing is required: everything in one upload lists as one folder, titled by the upload's name. The components below add structure on top. The list has three tiers:
+
+- **Folder** - an upload, or a shared heading spanning several uploads (see Display name / Parent).
+- **Variants** - a set of vehicles headed by a placeholder pack: one model in its lengths, liveries and formations.
+- **Vehicle** - the row.
+
+**Placeholder and variants.**
+
+1. In the editor's asset browser, open **Better Transit Selector -> Template** and duplicate **BTS Pack**. (Packs you save appear under **My Packs**; packs from subscriptions or the SharedPrefabs folder under **Shared Packs**.) Rename the copy - that name is the heading (the editor's Name field is used, in every language you fill in). It is a plain group prefab carrying a **BTS_Pack** component: no model, nothing in game, and with the mod disabled it loads as an inert group.
+2. On each vehicle, **Add Component -> Better Transit Selector -> BTS_Variant**. Set **Placeholder** to your pack and **Index** to the vehicle's position under it. Leave gaps in the indexes so a later variant can slot between existing ones.
+3. Ship the pack asset in the same upload as the vehicles (the editor packages it automatically as a dependency).
+
+Vehicles in the upload without the component still list under the upload, beside the variants. Packs made before 0.7 must be recreated from the template and the vehicles re-pointed (the components were renamed in 0.8: BTS_Pack, BTS_Variant).
+
+**One heading across several uploads (Display name).** Publishing each model as its own upload but want them under one heading? On each model's BTS_Pack type the same **Display name** - e.g. "DB Regio BaWü Trains". Every pack with that display name lists under one folder, whoever published it; case and spacing do not matter, spelling does. The heading and icon are taken from the oldest published member (set **Upload Icon** on your pack to offer one), so they do not change as later uploads join. No file to share.
+
+**A heading you control (Parent).** For a heading only you decide the membership of, make one more pack for it and on each model's pack set **Parent** to it instead. Ship that pack in every upload that belongs to it. Tick **Exclusive** on it to keep it separate from anyone who merely types the same display name; leave it unticked and it merges with them, which is how two creators who made the same heading independently end up as one folder. The parent pack's Display name, if set, is the heading shown in place of its prefab name.
+
+**Working with other creators.** To join a shared heading, type the same Display name. To join someone's variants or an exclusive heading, you need their pack file: a pack's identity is the asset. Options -> Advanced -> Asset creators -> **Export my packs** copies every pack you made (the .Prefab and its .cid, which carries the identity) into `ModsData/BetterTransitSelector/SharedPrefabs` - send those two files. (You can delete your own exported copies afterwards; while they sit there the editor may list your pack under Shared Packs instead of My Packs.) The receiver drops them into the same folder on their machine, unchanged; the editor loads them from there, and they set Placeholder or Parent to it as usual. Never duplicate or re-save a shared pack: a copy is a different pack. Whoever has the file can use it, so hand it out deliberately.
+
+**Countries of operation.** On BTS_Variant, pick up to five **Countries** the vehicle runs in. Players see them as flags in the vehicle's tooltip and page and can filter by them. Placeholder is optional, so a vehicle under no pack can still carry countries.
+
+**Icons.** Every picture in the picker is customizable:
+
+- Variants heading - the pack carries the game's **UI Object** component; set its icon.
+- Shared heading - the oldest member pack's **Upload Icon**; with a Parent, that pack's UI Object icon or Upload Icon.
+- Upload folder - set **Upload Icon** on the BTS_Pack component of one pack in the upload. (With a single iconed pack this happens on its own.)
+- Vehicle row - set **Icon** on BTS_Variant. It replaces the vehicle's thumbnail in the picker only; the asset's own thumbnail is untouched everywhere else.
+
+Fallbacks: a heading without its own icon uses the folder's; a folder with neither shows the first vehicle's thumbnail; a row without an Icon shows the vehicle's own.
+
+### Compatibility
+
+The mod replaces only the picker's UI. Selection is still written through the game's own code paths, so saves are untouched and unsubscribing the mod simply brings the vanilla list back. Works on bus, tram, train, subway, ship and aircraft lines, including the engine / carriage split on rail lines.
+		
+</LongDescription>
+	<!--Thumbnail-->
+	<Thumbnail Value="Properties/Thumbnail.png" />
+	<!--Screenshot, can be set multiple times-->
+	<Screenshot Value="Properties/1.png" />
+	<Screenshot Value="Properties/2.png" />
+	<Screenshot Value="Properties/3.png" />
+	<Screenshot Value="Properties/4.png" />
+	<Screenshot Value="Properties/5.png" />
+	<Screenshot Value="Properties/6.png" />
+
+	<!--Tag, can be set multiple times-->
+	<Tag Value="Code Mod" />
+	<!--Link to the forum post where the mod can be discussed-->
+	<ForumLink Value="" />
+	<!--Version of the mod-->
+	<ModVersion Value="0.9" />
+	<!--Recommended version of the base game to use the mod-->
+	<GameVersion Value="1.6.2*" />
+	<!--Dependency for the mod, can be set multiple times-->
+	<!--Unified Icon Library: the favourite star icons-->
+	<Dependency Id="74417" />
+	<!--Required DLC, can be set multiple times. Supported values are "Landmark Buildings", "San Fransisco Set", "Beach Properties", "Urban Promenades", "Modern Architecture"-->
+	<RequiredDLC Value="" />
+	<!--Change log for new version. Single line or multi line. Supports minimal markdown subset-->
+	<ChangeLog>## v0.9
+- Added editor field tooltips 
+- Added Auto-merging of top level packs 
+- Added Exclusion, Display Name for auto-merging	
+- Removed border around flags and country name in tooltip 
+- made platform fit optional 
+- Added Screenshots 		
+	</ChangeLog>
+	<!--External link, can be set multiple times. supported types are "discord", "github", "youtube", "twitch", "x", "paypal", "patreon", "buymeacoffee", "kofi", "crowdin", "gitlab", "gofundme"-->
+	<!--Supported values Public, Private, Unlisted-->
+	<AccessLevel Value="Unlisted" />
+</Publish>

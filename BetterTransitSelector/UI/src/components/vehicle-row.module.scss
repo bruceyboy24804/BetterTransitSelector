@@ -1,0 +1,243 @@
+// Two-line row: a large thumbnail, the name on line one, stats on line two.
+//
+// Gameface is not a browser and three of its differences shape this file:
+//   * Every element defaults to `display: flex` in COLUMN direction, so every row-wise flex
+//     container states `flex-direction: row` explicitly. Omitting it stacks the children.
+//   * `gap` does not exist -- it is absent from the supported-properties table, and unsupported CSS
+//     is silently ignored. Spacing is margins.
+//   * `object-fit` does not exist either, so images that must letterbox are background-image plus
+//     background-size (both supported) on a div rather than an <img>.
+//
+// Sizes are in rem because that is the engine's documented UI-scaling pattern: the root font size
+// is scaled to the viewport and everything sized in rem follows it.
+
+.row {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    padding: 2rem 4rem;
+    // Stated rather than inherited. Vanilla's dropdown menu sets its own text colour, and inside it
+    // these rows came out BLACK on a near-black popup -- invisible. Inline in an InfoSection they
+    // had inherited white, so the bug only appeared once the rows moved into the real dropdown.
+    color: rgb(255, 255, 255);
+}
+
+.thumb {
+    // The whole point of goal #4: creators encode unit count and livery into the thumbnail, and at
+    // vanilla's row height that detail is unreadable.
+    width: 42rem;
+    height: 42rem;
+    margin-left: 6rem;
+    background-repeat: no-repeat;
+    background-position: center;
+    // Stands in for object-fit: contain, so a non-square thumbnail letterboxes instead of stretching.
+    background-size: contain;
+}
+
+// Requirement icons sit beside the thumbnail but are badges, not artwork -- keep them small.
+.requirementIcon {
+    width: 16rem;
+    height: 16rem;
+    margin-left: 4rem;
+    background-repeat: no-repeat;
+    background-position: center;
+    background-size: contain;
+}
+
+// Name on the left, taking the slack so the stats stay pinned right.
+// flex-shrink defaults to 0 in this engine, so the shorthand states all three parts: without a
+// shrinkable zero basis a long vehicle name pushes the stats off the row rather than ellipsing,
+// which modded names do routinely.
+.name {
+    flex: 1 1 0;
+    margin-left: 6rem;
+    // Wraps rather than ellipsing. Modded names are long and descriptive ("AMTRAK Airo Charger &
+    // Venture (6)"), and truncating them hides exactly the part that distinguishes one variant from
+    // another -- the configuration in brackets.
+    white-space: normal;
+    // For a single token longer than the row, which no amount of wrapping between words can fix.
+    // Note `word-break` and `word-wrap` do not exist in this engine; overflow-wrap does.
+    overflow-wrap: break-word;
+}
+
+// The stats block: two stacked lines, right-aligned, at the end of the row.
+.stats {
+    display: flex;
+    flex-direction: column;
+    // Right-aligned via align-items rather than text-align: the engine's own property table warns
+    // that `flex` "does not work correctly together with text-align", and aligning the boxes needs
+    // no text-align at all since each line sizes to its content.
+    align-items: flex-end;
+    margin-left: 8rem;
+    opacity: 0.7;
+    font-size: 0.85em;
+}
+
+// A row, stated explicitly. A stat line is now label text + a LocalizedNumber element + unit text,
+// and an element child makes the engine's column default apply: label, number and unit stacked on
+// three lines. `pre` rather than `nowrap` because the unit strings carry a leading space (" km/h")
+// that a flex row would otherwise trim off, gluing "320" to "km/h".
+.stat {
+    display: flex;
+    flex-direction: row;
+    align-items: baseline;
+    justify-content: flex-end;
+    white-space: pre;
+}
+
+.multiUnit {
+    width: 20rem;
+    height: 20rem;
+    margin-left: 6rem;
+    background-repeat: no-repeat;
+    background-position: center;
+    background-size: contain;
+}
+
+// ---- Hover tooltip: every stat ----
+// A two-column table in the game's tooltip balloon. Colour stated: the balloon's own colour
+// tokens apply to its text, but the inner rows are ours.
+.tip {
+    display: flex;
+    flex-direction: column;
+    min-width: 220rem;
+}
+
+.tipTitle {
+    font-weight: bold;
+    margin-bottom: 4rem;
+}
+
+// The creator's description, between the title and the stats table.
+.tipDescription {
+    white-space: normal;
+    max-width: 420rem;
+    margin-bottom: 6rem;
+    opacity: 0.85;
+}
+
+.tipRow {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: baseline;
+}
+
+.tipLabel {
+    opacity: 0.7;
+    margin-right: 16rem;
+}
+
+.tipValue {
+    display: flex;
+    flex-direction: row;
+    align-items: baseline;
+    white-space: pre;
+}
+
+.tipOverloaded {
+    color: var(--warningColor);
+}
+
+// The overhang marker beside the name: the game's own warning glyph, small.
+.warning {
+    width: 18rem;
+    height: 18rem;
+    margin-left: 6rem;
+    flex-shrink: 0;
+    background-repeat: no-repeat;
+    background-position: center;
+    background-size: contain;
+}
+
+// A country flag in the tooltip's Countries row. 3:2 is the commonest flag ratio; the SVGs are
+// letterboxed into it with `contain`, so a square Swiss flag or a 1:2 UK flag still fits.
+.flag {
+    width: 30rem;
+    height: 20rem;
+    margin-left: 4rem;
+    background-repeat: no-repeat;
+    background-position: center;
+    background-size: contain;
+}
+
+// The favourite star, Find It's treatment: invisible until the row is hovered, always visible
+// once set, so a starred row reads as starred at a glance and an unstarred one stays clean.
+// Descendant selectors work here (Find It ships this exact pair). Always in the layout so the
+// stats column does not shift when the star appears.
+.star {
+    width: 20rem;
+    height: 20rem;
+    margin-left: 6rem;
+    flex-shrink: 0;
+    background-repeat: no-repeat;
+    background-position: center;
+    background-size: contain;
+    opacity: 0;
+    cursor: pointer;
+}
+
+.row:hover .star {
+    opacity: 0.6;
+}
+
+.row:hover .star:hover,
+.starOn,
+.row:hover .starOn {
+    opacity: 1;
+}
+
+// The page button, the pack header's treatment: a tinted glyph (mask over a colour fill),
+// hidden until the row is hovered so the list stays quiet.
+.infoButton {
+    width: 18rem;
+    height: 18rem;
+    margin-left: 6rem;
+    flex-shrink: 0;
+    mask-repeat: no-repeat;
+    mask-position: center;
+    mask-size: contain;
+    background-color: rgb(255, 255, 255);
+    opacity: 0;
+    cursor: pointer;
+}
+
+.row:hover .infoButton {
+    opacity: 0.5;
+}
+
+.row:hover .infoButton:hover {
+    opacity: 1;
+}
+
+.locked {
+    opacity: 0.5;
+}
+
+// ---- Variant rows ----
+
+// A variant inside a family: compact, no thumbnail, and a divider so the list reads as rows the way
+// the mockup draws it. Same checkbox as a top-level row.
+.variantRow {
+    padding: 3rem 4rem 3rem 12rem;
+    border-top: 1rem solid rgba(255, 255, 255, 0.08);
+}
+
+.row {
+    border-top: 1rem solid rgba(255, 255, 255, 0.08);
+    // The row is the click target, so it says so on hover.
+    cursor: pointer;
+}
+
+.row:hover {
+    background-color: rgba(255, 255, 255, 0.06);
+}
+
+// The last selection on the line: vanilla refuses to clear it, so the row does not offer to.
+.disabled {
+    cursor: default;
+}
+
+.disabled:hover {
+    background-color: transparent;
+}

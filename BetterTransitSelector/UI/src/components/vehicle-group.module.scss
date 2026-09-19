@@ -1,0 +1,126 @@
+// A collapsible group headline plus its nested variants, per the mockup.
+//
+// Engine constraints (see vehicle-row.module.scss): flex-direction stated explicitly because the
+// engine default is column, no `gap`, images as background-image, colours stated not inherited.
+
+// Padding matches .row in vehicle-row.module.scss, as does the icon size below, so a headline sits
+// at the same height as the vehicles under it instead of reading as a cramped separator.
+.header {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    padding: 2rem 4rem;
+    cursor: pointer;
+    // Stated, not inherited: inside vanilla's dropdown menu the inherited colour is black on a
+    // near-black popup. Same trap the rows hit.
+    color: rgb(255, 255, 255);
+}
+
+.caret {
+    width: 16rem;
+    height: 16rem;
+    margin-right: 2rem;
+    background-repeat: no-repeat;
+    background-position: center;
+    background-size: contain;
+}
+
+// A member's thumbnail, at the row thumbnail's size so a headline lines up with the rows under it.
+// Holds the pack-wide checkbox between the caret and the thumbnail, lined up with the member
+// rows' checkboxes beneath it.
+.headerCheck {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    margin-right: 6rem;
+}
+
+.icon {
+    width: 42rem;
+    height: 42rem;
+    margin-right: 6rem;
+    background-repeat: no-repeat;
+    background-position: center;
+    background-size: contain;
+}
+
+// Wraps like a row's name does, for the same reason: these titles are long and the truncated tail
+// ("… DB Regio Standard En…") is the half that says which pack it is.
+// Title over the pack info line; takes the header's remaining width (the flex basis moved here
+// from .title, which is now a plain child of this column).
+.titleBlock {
+    flex: 1 1 0;
+    display: flex;
+    flex-direction: column;
+}
+
+.title {
+    white-space: normal;
+    overflow-wrap: break-word;
+}
+
+// Author and publish date under a pack's title: small and dim, so it reads as a caption. One
+// line: the caption is a single string, and `pre` keeps the " · " separator from wrapping.
+.info {
+    font-size: 0.8em;
+    opacity: 0.55;
+    white-space: pre;
+}
+
+.count {
+    margin-left: 8rem;
+    opacity: 0.6;
+    font-size: 0.85em;
+}
+
+// The pack page button, vanilla's tinted-icon treatment: the glyph is a mask over a colour
+// fill (the SVG's own fill is a mask shape, not a picture), so the circled "i" takes the text
+// colour instead of painting black. Dim until hovered.
+// (.info is the author/date caption above; this must not share its name.)
+.infoButton {
+    width: 18rem;
+    height: 18rem;
+    margin-left: 8rem;
+    flex-shrink: 0;
+    mask-repeat: no-repeat;
+    mask-position: center;
+    mask-size: contain;
+    background-color: rgb(255, 255, 255);
+    opacity: 0.5;
+    cursor: pointer;
+}
+
+.infoButton:hover {
+    opacity: 1;
+}
+
+// The pack star, the row star's treatment: hidden until the header is hovered, lit once set,
+// always in the layout so the count does not shift.
+.star {
+    width: 20rem;
+    height: 20rem;
+    margin-left: 6rem;
+    flex-shrink: 0;
+    background-repeat: no-repeat;
+    background-position: center;
+    background-size: contain;
+    opacity: 0;
+    cursor: pointer;
+}
+
+.header:hover .star {
+    opacity: 0.6;
+}
+
+.header:hover .star:hover,
+.starOn,
+.header:hover .starOn {
+    opacity: 1;
+}
+
+// Variants sit indented under their headline so the hierarchy reads at a glance.
+.children {
+    display: flex;
+    flex-direction: column;
+    margin-left: 14rem;
+}

@@ -1,0 +1,170 @@
+// The pack page card. Engine rules as elsewhere: rows state flex-direction, no gap, images as
+// background-image, colour stated where the panel's inherited colour is not reliable.
+
+.page {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    padding: 0 10rem 8rem 10rem;
+    color: var(--textColor);
+}
+
+.header {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    padding: 6rem 0;
+}
+
+.title {
+    flex: 1 1 0;
+    // Clear of the close button in the corner.
+    margin-right: 32rem;
+    font-size: var(--fontSizeL);
+    font-weight: bold;
+    white-space: normal;
+    overflow-wrap: break-word;
+}
+
+// The game's own close button (IconButton + round-highlight + the panel theme's closeButton
+// class carry the look); this only pins it to the card's corner, since our card is not a
+// vanilla panel header for that class to position against.
+.close {
+    position: absolute;
+    top: 6rem;
+    right: 6rem;
+}
+
+// 16:9 cover, the ratio PDX covers are cropped to.
+.cover {
+    width: 100%;
+    height: 337rem;
+    margin-bottom: 8rem;
+    border-radius: 4rem;
+    background-repeat: no-repeat;
+    background-position: center;
+    background-size: cover;
+    background-color: rgba(0, 0, 0, 0.3);
+}
+
+.meta {
+    display: flex;
+    flex-direction: row;
+    align-items: baseline;
+    white-space: pre;
+    margin-bottom: 4rem;
+}
+
+.dim {
+    opacity: 0.6;
+}
+
+// One of the three PDX figures: tinted glyph then number, spaced like the mod browser's row.
+.figure {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    margin-right: 14rem;
+}
+
+.figureIcon {
+    width: 16rem;
+    height: 16rem;
+    margin-right: 5rem;
+    mask-repeat: no-repeat;
+    mask-position: center;
+    mask-size: contain;
+    background-color: rgb(255, 255, 255);
+    opacity: 0.8;
+}
+
+.flags {
+    display: flex;
+    flex-direction: row;
+    flex-wrap: wrap;
+    margin: 4rem 0 8rem 0;
+}
+
+.flag {
+    width: 30rem;
+    height: 20rem;
+    margin-right: 4rem;
+    margin-bottom: 4rem;
+    background-repeat: no-repeat;
+    background-position: center;
+    background-size: contain;
+}
+
+// The markdown body. The game's FormattedParagraphs brings its own paragraph/heading styling;
+// this only bounds it so a long description does not run the card off the screen.
+.description {
+    max-height: 400rem;
+    overflow-y: auto;
+    margin-bottom: 8rem;
+    padding-right: 4rem;
+}
+
+.shots {
+    display: flex;
+    flex-direction: row;
+    flex-wrap: wrap;
+    margin-bottom: 8rem;
+}
+
+.shot {
+    width: 180rem;
+    height: 101rem;
+    margin-right: 6rem;
+    margin-bottom: 6rem;
+    border-radius: 3rem;
+    background-repeat: no-repeat;
+    background-position: center;
+    background-size: cover;
+    background-color: rgba(0, 0, 0, 0.3);
+}
+
+.section {
+    display: flex;
+    flex-direction: column;
+    margin-bottom: 8rem;
+}
+
+.sectionHeading {
+    color: var(--accentColorNormal);
+    text-transform: uppercase;
+    font-size: 11rem;
+    padding: 4rem 0 2rem 0;
+}
+
+.dependency {
+    padding: 2rem 0;
+}
+
+.missing {
+    color: var(--warningColor);
+}
+
+.links {
+    display: flex;
+    flex-direction: row;
+    flex-wrap: wrap;
+    margin-bottom: 8rem;
+}
+
+// Text tool buttons, the filter panel's treatment.
+.link {
+    width: auto;
+    height: 28rem;
+    padding: 0 8rem;
+    margin: 2rem;
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    font-size: var(--fontSizeS);
+    color: var(--menuText1Normal);
+    background-color: rgba(15, 16, 19, 1);
+}
+
+.link img {
+    display: none;
+}
