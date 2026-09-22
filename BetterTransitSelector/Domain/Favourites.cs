@@ -75,8 +75,6 @@ namespace BetterTransitSelector.Domain {
                         m_Names.Add(name);
                     }
                 }
-
-                m_Log.Info($"Loaded {m_Names.Count} favourites from {kPath}");
             } catch (Exception e) {
                 // A corrupt file loses the stars, not the game: log and start empty.
                 m_Log.Warn($"Could not read favourites from {kPath}: {e.Message}");

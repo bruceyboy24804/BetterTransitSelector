@@ -154,8 +154,7 @@ namespace BetterTransitSelector
             {
                 var system = Unity.Entities.World.DefaultGameObjectInjectionWorld?
                     .GetExistingSystemManaged<Systems.BTS_VehicleStatsSystem>();
-                var count = system?.ExportSharedPacks() ?? 0;
-                Mod.Instance.ModLog.Info($"ExportPacks -- {count} pack(s) exported to {Domain.SharedPrefabs.Folder}");
+                system?.ExportSharedPacks();
             }
         }
 

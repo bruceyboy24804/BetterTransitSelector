@@ -289,20 +289,6 @@ namespace BetterTransitSelector.Systems {
 
             m_Stats.Value = stats.ToArray();
 
-            // The pack counts decide whether goal #3 is buildable on the game's own packaging
-            // hierarchy at all. If real assets turn out to carry no packs, grouping needs a
-            // mod-owned prefab instead, so this line is worth reading before designing that UI.
-            var grouped   = stats.Count(s => !string.IsNullOrEmpty(s.Group));
-            var packNames = stats.Where(s => !string.IsNullOrEmpty(s.Group))
-                                 .Select(s => s.Group)
-                                 .Distinct()
-                                 .ToArray();
-            var titled = stats.Count(s => !string.IsNullOrEmpty(s.GroupTitle));
-            m_Log.Info(
-                $"RebuildStats() -- {stats.Count} vehicle prefabs, {grouped} packaged, " +
-                $"{packNames.Length} distinct packages, {titled} with a parent-asset headline, " +
-                $"{byVariant.Count} trains declared as variants of a placeholder.");
-
             // Which package got which headline, so a wrong-looking group name can be traced to the
             // asset it was taken from rather than guessed at.
             foreach (var pair in titles) {
@@ -686,7 +672,6 @@ namespace BetterTransitSelector.Systems {
 
             if (m_PrefabSystem.AddPrefab(template)) {
                 m_TemplateRegistered = true;
-                m_Log.Info($"RegisterPackTemplate() -- '{PackTemplateName}' registered for duplication in the editor.");
             } else {
                 m_Log.Warn($"RegisterPackTemplate() -- AddPrefab refused '{PackTemplateName}'.");
             }
@@ -784,7 +769,6 @@ namespace BetterTransitSelector.Systems {
 
                 if (SharedPrefabs.Export(prefabBase.asset.path)) {
                     exported++;
-                    m_Log.Info($"ExportSharedPacks() -- '{prefabBase.name}' -> {SharedPrefabs.Folder}");
                 } else {
                     m_Log.Warn($"ExportSharedPacks() -- '{prefabBase.name}' at '{prefabBase.asset.path}' has no .cid beside it; skipped.");
                 }
@@ -1124,8 +1108,7 @@ namespace BetterTransitSelector.Systems {
             }
             packs.Dispose();
 
-            var vehicles   = m_VariantQuery.ToEntityArray(Unity.Collections.Allocator.Temp);
-            var registered = 0;
+            var vehicles = m_VariantQuery.ToEntityArray(Unity.Collections.Allocator.Temp);
 
             for (var i = 0; i < vehicles.Length; i++) {
                 var vehicle = vehicles[i];
@@ -1138,14 +1121,9 @@ namespace BetterTransitSelector.Systems {
 
                 EntityManager.GetBuffer<BTS_PackElement>(data.m_Placeholder)
                              .Add(new BTS_PackElement(vehicle));
-                registered++;
             }
 
             vehicles.Dispose();
-
-            if (registered > 0) {
-                m_Log.Info($"RegisterVariantsWithPacks() -- registered {registered} variants with their packs.");
-            }
         }
 
         /// <summary>
