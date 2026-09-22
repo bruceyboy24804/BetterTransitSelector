@@ -81,7 +81,7 @@ The mod replaces only the picker's UI. Selection is still written through the ga
 	<!--Link to the forum post where the mod can be discussed-->
 	<ForumLink Value="" />
 	<!--Version of the mod-->
-	<ModVersion Value="0.9" />
+	<ModVersion Value="0.10" />
 	<!--Recommended version of the base game to use the mod-->
 	<GameVersion Value="1.6.2*" />
 	<!--Dependency for the mod, can be set multiple times-->
@@ -90,13 +90,9 @@ The mod replaces only the picker's UI. Selection is still written through the ga
 	<!--Required DLC, can be set multiple times. Supported values are "Landmark Buildings", "San Fransisco Set", "Beach Properties", "Urban Promenades", "Modern Architecture"-->
 	<RequiredDLC Value="" />
 	<!--Change log for new version. Single line or multi line. Supports minimal markdown subset-->
-	<ChangeLog>## v0.9
-- Added editor field tooltips 
-- Added Auto-merging of top level packs 
-- Added Exclusion, Display Name for auto-merging	
-- Removed border around flags and country name in tooltip 
-- made platform fit optional 
-- Added Screenshots 		
+	<ChangeLog>## v0.10
+- Packs saved before 0.7 now load as inert groups with the mod on (they still fail with it off) and the mod's log names the package each one is in - recreate them from the BTS Pack template and republish
+- Fix: the editor's object state panel (and any flags dropdown outside the inspector) threw "e.path?.endsWith is not a function" and went blank while the mod was enabled
 	</ChangeLog>
 	<!--External link, can be set multiple times. supported types are "discord", "github", "youtube", "twitch", "x", "paypal", "patreon", "buymeacoffee", "kofi", "crowdin", "gitlab", "gofundme"-->
 	<!--Supported values Public, Private, Unlisted-->

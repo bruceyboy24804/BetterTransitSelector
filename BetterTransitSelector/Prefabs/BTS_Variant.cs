@@ -46,8 +46,7 @@ namespace BetterTransitSelector.Prefabs {
         /// Typed as <see cref="GroupPrefab"/>, the vanilla root type a pack is built on (see
         /// <see cref="BTS_Pack"/> for why the pack is not a prefab type of ours): the
         /// editor's picker then offers only group prefabs, so a train cannot be pointed at a prop
-        /// or another train by mistake. A pre-0.7 <see cref="BTS_TrainPackPrefab"/> derives from
-        /// it and still fits.
+        /// or another train by mistake.
         ///
         /// Optional, because this component also carries <see cref="m_Countries"/>, and a train
         /// need not be in a pack to say where it runs. One component for creators to learn.

@@ -126,7 +126,6 @@
   "BetterTransitSelector.Country[IN]": "Indien",
   "BetterTransitSelector.Country[RU]": "Russland",
   "BetterTransitSelector.Country[AU]": "Australien",
-  "Editor.FIELD_TOOLTIP[BetterTransitSelector.Prefabs.BTS_TrainPackPrefab.m_UploadIcon]": "Alter Pakettyp von vor 0.7. Dieses Paket aus der Vorlage BTS Pack neu erstellen und die Fahrzeuge neu zuweisen; dieses Asset lädt bei Spielern mit deaktivierter Mod nicht.",
   "Editor.FIELD_TOOLTIP[BetterTransitSelector.Prefabs.BTS_Pack.m_UploadIcon]": "Symbol für den Ordner des Uploads in der Auswahl (die Überschrift, die alles aus einem Paradox-Mods-Upload zusammenfasst). Auf einem Paket im Upload setzen. Bei einer gemeinsamen Überschrift wird es als deren Symbol angeboten.",
   "Editor.FIELD_TOOLTIP[BetterTransitSelector.Prefabs.BTS_Pack.m_Parent]": "Ein Paket, unter dem dieses Paket einsortiert wird. Der Name des Elternpakets ist die Ordnerüberschrift, sein Symbol das Ordnersymbol. Das Elternpaket in jedem Upload mitliefern, der es verwendet. None lassen, um stattdessen Anzeigename oder Upload zu nutzen.",
   "Editor.FIELD[BetterTransitSelector.Prefabs.BTS_Pack.m_DisplayName]": "Anzeigename",

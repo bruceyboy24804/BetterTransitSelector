@@ -212,8 +212,14 @@ export const installCountryField = (registry: ModuleRegistry) => {
     const swap = ((components: Record<string, React.ComponentType<WidgetRenderProps>>) => {
         const Original = components[FLAGS_FIELD_KEY];
         if (!Original) return components;
+        // `path` is a string for inspector fields, but not for every FlagsField the editor
+        // renders: the object-state panel's widgets pass a non-string path, and calling
+        // endsWith on it threw and blanked that panel (reported by Maestro). Anything that is
+        // not a string is not ours.
+        const isOurs = (path: unknown) =>
+            typeof path === "string" && (path === OUR_PATH || path.endsWith("." + OUR_PATH));
         const Routed = (p: WidgetRenderProps) =>
-            p.path === OUR_PATH || p.path?.endsWith("." + OUR_PATH) ? <BoundCountryField {...p} /> : <Original {...p} />;
+            isOurs(p.path) ? <BoundCountryField {...p} /> : <Original {...p} />;
         return { ...components, [FLAGS_FIELD_KEY]: Routed };
     }) as unknown as ModuleRegistryExtend;
 

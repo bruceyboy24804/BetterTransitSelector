@@ -82,6 +82,9 @@ namespace BetterTransitSelector.Systems {
 
         private bool m_Dirty;
 
+        /// <summary>Old-style packs already warned about this session, so the log gets one line per pack.</summary>
+        private readonly HashSet<Entity> m_WarnedLegacyPacks = new HashSet<Entity>();
+
         /// <inheritdoc/>
         protected override void OnCreate() {
             base.OnCreate();
@@ -862,8 +865,7 @@ namespace BetterTransitSelector.Systems {
                 : string.Empty;
 
         /// <summary>
-        /// The upload icon set on a pack, raw (unresolved); empty when none. Read from the pack
-        /// component, or from the pre-0.7 pack prefab type for assets saved before it.
+        /// The upload icon set on a pack, raw (unresolved); empty when none.
         /// </summary>
         private string GetUploadIcon(Entity pack) {
             if (!m_PrefabSystem.TryGetPrefab<PrefabBase>(pack, out var prefabBase)) {
@@ -873,12 +875,6 @@ namespace BetterTransitSelector.Systems {
             if (prefabBase.TryGet<BTS_Pack>(out var component) && !string.IsNullOrEmpty(component.m_UploadIcon)) {
                 return component.m_UploadIcon;
             }
-
-#pragma warning disable CS0618 // The old type is exactly what this branch is for.
-            if (prefabBase is BTS_TrainPackPrefab legacy && !string.IsNullOrEmpty(legacy.m_UploadIcon)) {
-                return legacy.m_UploadIcon;
-            }
-#pragma warning restore CS0618
 
             return string.Empty;
         }
@@ -981,6 +977,18 @@ namespace BetterTransitSelector.Systems {
                         $"points at '{m_PrefabSystem.GetPrefabName(data.m_Placeholder)}' (by '{GetAuthor(data.m_Placeholder)}') " +
                         "but is not its author and did not ship it; refused.");
                     continue;
+                }
+
+                // A pre-0.7 pack: still a family (identity is the GUID), but it fails to load
+                // for every player who has this mod disabled, and the failing game logs no asset
+                // name -- so name the package here, once per pack, for the creator to fix.
+#pragma warning disable CS0618
+                if (m_PrefabSystem.TryGetPrefab<PrefabBase>(data.m_Placeholder, out var placeholderPrefab)
+                    && placeholderPrefab is BTS_TrainPackPrefab
+                    && m_WarnedLegacyPacks.Add(data.m_Placeholder)) {
+#pragma warning restore CS0618
+                    var pkg = placeholderPrefab.asset != null ? placeholderPrefab.asset.GetMeta().packageName : "(local)";
+                    m_Log.Warn($"BuildVariantFamilies() -- '{placeholderPrefab.name}' in {pkg} is an old-style pack (BTS_TrainPackPrefab). It fails to load for players with the mod disabled; recreate it from the BTS Pack template and republish.");
                 }
 
                 // The heading is the placeholder's own name -- the one thing the creator named.

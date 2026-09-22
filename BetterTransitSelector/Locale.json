@@ -131,7 +131,6 @@
 	"BetterTransitSelector.Country[IN]": "India",
 	"BetterTransitSelector.Country[RU]": "Russia",
 	"BetterTransitSelector.Country[AU]": "Australia",
-	"Editor.FIELD_TOOLTIP[BetterTransitSelector.Prefabs.BTS_TrainPackPrefab.m_UploadIcon]": "Old pack type from before 0.7. Recreate this pack from the BTS Pack template and re-point your vehicles; this asset fails to load for players who have the mod disabled.",
 	"Editor.FIELD_TOOLTIP[BetterTransitSelector.Prefabs.BTS_Pack.m_UploadIcon]": "Icon for the upload's folder in the picker (the heading that groups everything from one Paradox Mods upload). Set it on one pack in the upload. With a shared heading, offers this as its icon.",
 	"Editor.FIELD_TOOLTIP[BetterTransitSelector.Prefabs.BTS_Pack.m_Parent]": "A pack this pack sits under. The parent's name heads the folder and its icon is the folder's. Ship the parent asset in every upload that uses it. Leave None to use Display name or the upload instead.",
 	"Editor.FIELD[BetterTransitSelector.Prefabs.BTS_Pack.m_DisplayName]": "Display name",
