@@ -281,11 +281,17 @@ export interface AssetInfo {
 }
 
 /**
- * The carriage figure as creators write it: "2 x 3" for two three-car units, "3" for one.
- * Maestro's ask -- a bare 3 on a 2x3 reads as a three-car train.
+ * The carriage figure: the total number of cars, with the unit breakdown after it when the
+ * train runs as several units -- "6 (2 x 3)".
+ *
+ * Maestro's ask: a 1x3 and a 2x3 Mireo both read "3" before, which is one unit's cars, "correct
+ * but also misleading -- people can think it is just 3 cars and not 2x3". The headline figure is
+ * now what is actually coupled together, and the breakdown says where it came from.
  */
 export const carriagesText = (stats: VehicleStats): string =>
-    stats.units > 1 ? `${stats.units} x ${Math.round(stats.carriages / stats.units)}` : `${stats.carriages}`;
+    stats.units > 1
+        ? `${stats.carriages} (${stats.units} x ${Math.round(stats.carriages / stats.units)})`
+        : `${stats.carriages}`;
 
 export const useAssetInfo = (): AssetInfo => useValue(ASSET_INFO.binding);
 

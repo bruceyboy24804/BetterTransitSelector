@@ -91,7 +91,7 @@ The mod replaces only the picker's UI. Selection is still written through the ga
 	<RequiredDLC Value="" />
 	<!--Change log for new version. Single line or multi line. Supports minimal markdown subset-->
 	<ChangeLog>## v0.11
-- Multi-unit trains now report the whole train: a 2x3 shows the passengers and length of both units, and the carriage figure reads "2 x 3" instead of a bare 3
+- Multi-unit trains now report the whole train: a 2x3 shows the passengers and length of both units, and the carriage figure is the total number of cars with the units after it - "6 (2 x 3)" where it used to read 3
 - Fix: consists counted carriages by the prefab's maximum rather than the number the game actually spawns
 	</ChangeLog>
 	<!--External link, can be set multiple times. supported types are "discord", "github", "youtube", "twitch", "x", "paypal", "patreon", "buymeacoffee", "kofi", "crowdin", "gitlab", "gofundme"-->
