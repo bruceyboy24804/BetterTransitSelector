@@ -140,6 +140,12 @@ namespace BetterTransitSelector.Domain {
         public string Icon { get; }
 
         /// <summary>
+        /// How many units the train runs as; 1 for anything else. With <see cref="Carriages"/>
+        /// (the total) this is what lets a row read "2 x 3" rather than a bare 3.
+        /// </summary>
+        public int Units { get; }
+
+        /// <summary>
         /// The collection this vehicle's family belongs to, by the top-most parent pack's asset
         /// GUID; empty when the family has no parent. Replaces the upload as the picker's folder.
         /// </summary>
@@ -156,7 +162,7 @@ namespace BetterTransitSelector.Domain {
             string family, string familyTitle, string familyIcon, string groupIcon, int index,
             float acceleration, float braking, string energyType, int carriages, int length,
             string packageDate, string theme, string author, string countries, string icon,
-            string collection = "", string collectionTitle = "", string collectionIcon = "") {
+            string collection = "", string collectionTitle = "", string collectionIcon = "", int units = 1) {
             Entity       = entity;
             MaxSpeed     = maxSpeed;
             Passengers   = passengers;
@@ -180,6 +186,7 @@ namespace BetterTransitSelector.Domain {
             Collection      = collection;
             CollectionTitle = collectionTitle;
             CollectionIcon  = collectionIcon;
+            Units           = units;
         }
 
         /// <inheritdoc/>
@@ -225,6 +232,8 @@ namespace BetterTransitSelector.Domain {
             writer.Write(Countries ?? string.Empty);
             writer.PropertyName("icon");
             writer.Write(Icon ?? string.Empty);
+            writer.PropertyName("units");
+            writer.Write(Units);
             writer.PropertyName("collection");
             writer.Write(Collection ?? string.Empty);
             writer.PropertyName("collectionTitle");

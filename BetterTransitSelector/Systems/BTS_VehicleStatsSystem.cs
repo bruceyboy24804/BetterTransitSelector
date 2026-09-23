@@ -192,6 +192,14 @@ namespace BetterTransitSelector.Systems {
                 }
             });
 
+            // The Recently used block's open state: toggled from its heading in the list, stored
+            // in the settings so it survives the panel closing and the game restarting.
+            CreateTrigger<bool>("setRecentOpen", open => {
+                var setting = (Setting)Mod.Instance.Settings;
+                setting.RecentOpen = open;
+                setting.ApplyAndSave();
+            });
+
             // Recently picked, same shape: the UI reports a select, the list re-emits.
             m_Recent.Load();
             m_RecentBinding = CreateBinding("recent", m_Recent.Names.ToArray());
@@ -282,7 +290,8 @@ namespace BetterTransitSelector.Systems {
                     acceleration, braking, GetEnergyType(entity), GetConsistCars(entity),
                     GetConsistLength(entity), GetPackageDate(entity), GetTheme(entity), GetAuthor(entity),
                     GetCountries(entity), GetRowIcon(entity),
-                    variant.Collection ?? string.Empty, variant.CollectionTitle ?? string.Empty, variant.CollectionIcon ?? string.Empty));
+                    variant.Collection ?? string.Empty, variant.CollectionTitle ?? string.Empty, variant.CollectionIcon ?? string.Empty,
+                    GetUnitCount(entity)));
             }
 
             entities.Dispose();
@@ -1381,8 +1390,26 @@ namespace BetterTransitSelector.Systems {
         }
 
         /// <summary>
-        /// Sums a per-car figure over the whole consist: the head car plus every carriage times
-        /// how many of it the consist runs.
+        /// The number of units a multi-unit train runs as: two 3-car Mireos coupled are 2 units.
+        /// 1 for anything that is not a multi-unit train.
+        /// </summary>
+        /// <remarks>
+        /// <c>TrainEngineData.m_Count.x</c>, which is what
+        /// <c>TransportVehicleSelectData.GetRandomVehicle</c> reads into its own <c>unitCount</c>
+        /// and then spawns that many of. Creators name these "2x3", and without this the mod
+        /// reported one unit's figures for the whole train (Maestro: "on both the carriages will
+        /// be 3, which is correct but also misleading for the 2x3").
+        /// </remarks>
+        private int GetUnitCount(Entity prefab) =>
+            EntityManager.HasComponent<MultipleUnitTrainData>(prefab)
+            && EntityManager.TryGetComponent(prefab, out TrainEngineData engine)
+            && engine.m_Count.x > 0
+                ? engine.m_Count.x
+                : 1;
+
+        /// <summary>
+        /// Sums a per-car figure over the whole consist: every unit, each unit's own car plus
+        /// every carriage times how many of it that unit runs.
         /// </summary>
         /// <remarks>
         /// The reason this exists is that a multi-unit train's prefab is only its head car. Its
@@ -1392,24 +1419,25 @@ namespace BetterTransitSelector.Systems {
         /// wrote into the asset's own name. Reporting the head car alone would have shown 71 for a
         /// train that seats 834, on exactly the kind of asset this mod exists for.
         ///
-        /// Uses the maximum count of each carriage, i.e. the longest consist the prefab can run,
-        /// which is the figure a player sizing a line wants.
+        /// Two details are taken from the game's own spawn loop rather than guessed, because both
+        /// were wrong here before: the carriage count is <c>m_Count.x</c>, the number the loop
+        /// actually creates (the <c>.y</c> this used is never read at spawn), and the whole thing
+        /// is multiplied by <see cref="GetUnitCount"/> — a 2x2 BR612 seats twice what one unit does,
+        /// which is why its row read 145 beside a name saying 290.
         /// </remarks>
         private float SumConsist(Entity prefab, System.Func<Entity, float> perCar) {
-            var total = perCar(prefab);
+            var perUnit = perCar(prefab);
 
-            if (!EntityManager.TryGetBuffer(prefab, true, out DynamicBuffer<VehicleCarriageElement> carriages)) {
-                return total;
-            }
-
-            for (var i = 0; i < carriages.Length; i++) {
-                var carriage = carriages[i];
-                if (carriage.m_Prefab != Entity.Null) {
-                    total += perCar(carriage.m_Prefab) * carriage.m_Count.y;
+            if (EntityManager.TryGetBuffer(prefab, true, out DynamicBuffer<VehicleCarriageElement> carriages)) {
+                for (var i = 0; i < carriages.Length; i++) {
+                    var carriage = carriages[i];
+                    if (carriage.m_Prefab != Entity.Null) {
+                        perUnit += perCar(carriage.m_Prefab) * carriage.m_Count.x;
+                    }
                 }
             }
 
-            return total;
+            return perUnit * GetUnitCount(prefab);
         }
 
         /// <summary>
@@ -1468,11 +1496,11 @@ namespace BetterTransitSelector.Systems {
             var cars = CarriesPassengers(prefab) ? 1 : 0;
             for (var i = 0; i < carriages.Length; i++) {
                 if (CarriesPassengers(carriages[i].m_Prefab)) {
-                    cars += carriages[i].m_Count.y;
+                    cars += carriages[i].m_Count.x;
                 }
             }
 
-            return cars;
+            return cars * GetUnitCount(prefab);
         }
 
         private bool CarriesPassengers(Entity car) =>

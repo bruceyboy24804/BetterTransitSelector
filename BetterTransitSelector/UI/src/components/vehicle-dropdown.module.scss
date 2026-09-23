@@ -121,6 +121,37 @@
 
 // Small caps label over the recent block, in the same accent treatment as the panel titles so
 // it reads as a heading and not as a row. Colour stated: inside vanilla's menu it inherits black.
+// The Recently used heading as a toggle: the label takes the width, the chevron sits at the
+// end, and the whole row is clickable.
+.collapsibleHeading {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    cursor: pointer;
+}
+
+.collapsibleHeading .sectionHeading {
+    flex: 1 1 0;
+}
+
+// A tinted glyph, the treatment the info button uses: the SVG masks a colour fill, so it takes
+// the heading's accent colour instead of painting black.
+.headingChevron {
+    width: 14rem;
+    height: 14rem;
+    margin-right: 8rem;
+    flex-shrink: 0;
+    mask-repeat: no-repeat;
+    mask-position: center;
+    mask-size: contain;
+    background-color: var(--accentColorNormal);
+    opacity: 0.7;
+}
+
+.collapsibleHeading:hover .headingChevron {
+    opacity: 1;
+}
+
 .sectionHeading {
     padding: 6rem 8rem 2rem 8rem;
     color: var(--accentColorNormal);

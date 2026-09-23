@@ -3,6 +3,7 @@ import { VC, VT } from "vanilla/Components";
 import { c } from "utils/classes";
 import {
     TARGET_LOAD,
+    carriagesText,
     countriesOf,
     flagUrl,
     overhangs,
@@ -128,7 +129,7 @@ export const VehiclePage = ({
                     {s.acceleration > 0 && <Row label={t("Acceleration", "Acceleration")}><AccelerationValue mps2={s.acceleration} /></Row>}
                     {s.braking > 0 && <Row label={t("Braking", "Braking")}><AccelerationValue mps2={s.braking} /></Row>}
                     {s.energyType && <Row label={t("Power", "Power")}>{s.energyType}</Row>}
-                    {s.carriages > 0 && <Row label={t("Carriages", "Carriages")}><CountValue value={s.carriages} /></Row>}
+                    {s.carriages > 0 && <Row label={t("Carriages", "Carriages")}>{carriagesText(s)}</Row>}
                     {s.length > 0 && (
                         <Row label={t("Length", "Length")} warn={tooLong}>
                             <LengthValue metres={s.length} />

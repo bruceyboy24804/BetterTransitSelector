@@ -3,6 +3,7 @@ import { VC } from "vanilla/Components";
 import { c } from "utils/classes";
 import {
     TARGET_LOAD,
+    carriagesText,
     countriesOf,
     flagUrl,
     overhangs,
@@ -136,7 +137,7 @@ export const VehicleRow = ({
             {vehicleStats.carriages > 0 && (
                 <div className={styles.tipRow}>
                     <div className={styles.tipLabel}>{t("Carriages", "Carriages")}</div>
-                    <div className={styles.tipValue}><CountValue value={vehicleStats.carriages} /></div>
+                    <div className={styles.tipValue}>{carriagesText(vehicleStats)}</div>
                 </div>
             )}
             {vehicleStats.length > 0 && (
@@ -267,8 +268,7 @@ export const VehicleRow = ({
                     )}
                     {options.carriages && vehicleStats.carriages > 0 && (
                         <div className={styles.stat}>
-                            {t("Carriages", "Carriages") + ": "}
-                            <CountValue value={vehicleStats.carriages} />
+                            {t("Carriages", "Carriages") + ": " + carriagesText(vehicleStats)}
                         </div>
                     )}
                     {options.length && vehicleStats.length > 0 && (

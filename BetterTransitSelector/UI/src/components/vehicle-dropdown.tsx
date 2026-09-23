@@ -27,7 +27,7 @@ import {
     type VehicleFilters,
     type VehiclePrefab,
 } from "../vehicle-stats";
-import { requestAssetInfo, requestPackInfo } from "../bindings";
+import { requestAssetInfo, requestPackInfo, setRecentOpen as setRecentOpen$ } from "../bindings";
 import { PackPage } from "./pack-page";
 import { VehiclePage } from "./vehicle-page";
 import { VehicleFiltersBar } from "./vehicle-filters";
@@ -43,6 +43,8 @@ const SEARCH_THRESHOLD = 6;
 
 // The Thick* set is the only one shipping all four directions.
 const ARROW_OPEN = "Media/Glyphs/ThickStrokeArrowRight.svg";
+const CHEVRON_UP = "Media/Glyphs/ThickStrokeArrowUp.svg";
+const CHEVRON_DOWN = "Media/Glyphs/ThickStrokeArrowDown.svg";
 const ARROW_CLOSE = "Media/Glyphs/ThickStrokeArrowLeft.svg";
 
 export interface VehicleDropdownProps {
@@ -207,6 +209,10 @@ export const VehicleDropdown = ({
     // and held for the whole time the list is open, so picks made while it is open do not move
     // the block. Seeded from the live value so a freshly mounted panel shows something.
     const [recentSnapshot, setRecentSnapshot] = useState<string[]>(recentNames);
+    // Open or shut, persisted through the settings so it survives reopening the panel and the
+    // game; the binding is a getter, so the toggle takes effect on the next read.
+    const recentOpen = options.recentOpen;
+    const setRecentOpen = (open: boolean) => setRecentOpen$(open);
     const onMenuToggle = (open: boolean) => {
         setMenuOpen(open);
         if (open) setRecentSnapshot(recentNames);
@@ -450,8 +456,19 @@ export const VehicleDropdown = ({
             {/* Recent first, under a heading so the block explains itself and with a divider
                 under it so the boundary with the rest is visible; then loose entries, then the
                 groups -- the order the mockup shows. */}
-            {recent.length > 0 && <div className={styles.sectionHeading}>{t("RecentlyUsed", "Recently used")}</div>}
-            {recent.map((vehicle) => (
+            {recent.length > 0 && (
+                // Collapsible, at Maestro's request: "it should be hidable if someone doesn't
+                // like it taking space". The whole heading is the hit target, the chevron says
+                // which way it goes, and the choice is remembered per player in the settings.
+                <div className={styles.collapsibleHeading} onClick={() => setRecentOpen(!recentOpen)}>
+                    <div className={styles.sectionHeading}>{t("RecentlyUsed", "Recently used")}</div>
+                    <div
+                        className={styles.headingChevron}
+                        style={{ maskImage: `url(${recentOpen ? CHEVRON_UP : CHEVRON_DOWN})` }}
+                    />
+                </div>
+            )}
+            {recentOpen && recent.map((vehicle) => (
                 <VehicleRow
                     key={`${vehicle.entity.index}:${vehicle.entity.version}`}
                     vehicle={vehicle}
@@ -464,7 +481,7 @@ export const VehicleDropdown = ({
                     onInfo={options.vehiclePages ? () => openAsset(vehicle) : undefined}
                 />
             ))}
-            {recent.length > 0 && recent.length < shown.length && (
+            {recentOpen && recent.length > 0 && recent.length < shown.length && (
                 <div className={styles.starredDivider} />
             )}
 

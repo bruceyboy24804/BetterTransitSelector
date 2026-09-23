@@ -39,6 +39,8 @@ namespace BetterTransitSelector.Domain {
         public string SpeedUnit { get; }
 
         /// <summary>Whether pack headers offer the info button that opens the upload's page.</summary>
+        public bool RecentOpen { get; }
+
         public bool PackPages { get; }
 
         public bool VehiclePages { get; }
@@ -50,6 +52,7 @@ namespace BetterTransitSelector.Domain {
             FavouritesWidth  = setting.FavouritesWidth;
             FavouritesHeight = setting.FavouritesHeight;
             SpeedUnit    = setting.Speed.ToString();
+            RecentOpen   = setting.RecentOpen;
             PackPages    = setting.PackPages;
             VehiclePages = setting.VehiclePages;
             MaxSpeed     = setting.ShowMaxSpeed;
@@ -90,6 +93,8 @@ namespace BetterTransitSelector.Domain {
             writer.Write(FavouritesHeight);
             writer.PropertyName("speedUnit");
             writer.Write(SpeedUnit ?? "Auto");
+            writer.PropertyName("recentOpen");
+            writer.Write(RecentOpen);
             writer.PropertyName("packPages");
             writer.Write(PackPages);
             writer.PropertyName("vehiclePages");

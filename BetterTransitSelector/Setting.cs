@@ -116,6 +116,13 @@ namespace BetterTransitSelector
         public SpeedUnit Speed { get; set; } = SpeedUnit.Auto;
 
         /// <summary>
+        /// Whether the Recently used block at the top of the list is expanded. Toggled by its
+        /// own heading in the list rather than here, but kept as a setting so the choice sticks.
+        /// </summary>
+        [SettingsUIHidden]
+        public bool RecentOpen { get; set; } = true;
+
+        /// <summary>
         /// Platform fit on train and subway lines: the warning marker on consists longer than
         /// the line's shortest platform, the platform length in tooltips and pages, and the
         /// "Fits" filter. Off, the platform is never measured and none of that appears.

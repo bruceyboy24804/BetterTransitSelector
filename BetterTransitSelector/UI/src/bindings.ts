@@ -23,6 +23,7 @@ export const STAT_OPTIONS = new OneWayBinding<StatOptions>("statOptions", {
     favouritesWidth: 0,
     favouritesHeight: 0,
     speedUnit: "Auto",
+    recentOpen: true,
     packPages: false,
     vehiclePages: false,
 });
@@ -94,6 +95,9 @@ export const toggleFavourite = triggers.create<[string]>("toggleFavourite");
 // Starred packs, by group id (the upload's "Mod:<id>" name, which is what `groupOf` returns).
 export const FAVOURITE_PACKS = new OneWayBinding<string[]>("favouritePacks", []);
 export const toggleFavouritePack = triggers.create<[string]>("toggleFavouritePack");
+
+// Whether the Recently used block is expanded; persisted in the settings.
+export const setRecentOpen = triggers.create<[boolean]>("setRecentOpen");
 
 // The last three picked, newest first. Reported on select only.
 export const RECENT = new OneWayBinding<string[]>("recent", []);

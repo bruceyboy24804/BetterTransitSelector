@@ -60,8 +60,10 @@ export interface VehicleStats {
     braking: number;
     /** What it runs on, e.g. "Electricity"; "" when unknown. Flags, so dual-mode lists both. */
     energyType: string;
-    /** Greatest carriage count the consist runs to; 0 for a single unit. */
+    /** Passenger-carrying cars in the WHOLE consist, every unit counted; 0 when unknown. */
     carriages: number;
+    /** Units a multi-unit train runs as (a 2x3 is 2); 1 for everything else. */
+    units: number;
     /** Length in whole metres; 0 when unknown. */
     length: number;
     /** Publication date of the upload, ISO 8601 UTC; "" when unknown. Sorts as a string. */
@@ -211,6 +213,8 @@ export interface StatOptions {
     favouritesHeight: number;
     /** "Auto" | "Kph" | "Mph" -- Auto follows the game's unit system. */
     speedUnit: string;
+    /** Whether the Recently used block at the top of the list is expanded. */
+    recentOpen: boolean;
     /** Whether pack headers offer the info button that opens the upload's page. */
     packPages: boolean;
     /** Whether vehicle rows offer the info button that opens the vehicle's page. */
@@ -275,6 +279,13 @@ export interface AssetInfo {
     /** Head car first, then each carriage entry. */
     cars: AssetCar[];
 }
+
+/**
+ * The carriage figure as creators write it: "2 x 3" for two three-car units, "3" for one.
+ * Maestro's ask -- a bare 3 on a 2x3 reads as a three-car train.
+ */
+export const carriagesText = (stats: VehicleStats): string =>
+    stats.units > 1 ? `${stats.units} x ${Math.round(stats.carriages / stats.units)}` : `${stats.carriages}`;
 
 export const useAssetInfo = (): AssetInfo => useValue(ASSET_INFO.binding);
 
