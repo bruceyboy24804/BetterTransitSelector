@@ -123,23 +123,27 @@
 // it reads as a heading and not as a row. Colour stated: inside vanilla's menu it inherits black.
 // The Recently used heading as a toggle: the label takes the width, the chevron sits at the
 // end, and the whole row is clickable.
+// The row owns the heading's padding so the chevron centres on the TEXT: with the padding left
+// on the label (6rem top, 2rem bottom) the row's centre sat above the text's, and the chevron
+// floated high.
 .collapsibleHeading {
     display: flex;
     flex-direction: row;
     align-items: center;
+    padding: 6rem 8rem 2rem 8rem;
     cursor: pointer;
 }
 
 .collapsibleHeading .sectionHeading {
     flex: 1 1 0;
+    padding: 0;
 }
 
 // A tinted glyph, the treatment the info button uses: the SVG masks a colour fill, so it takes
 // the heading's accent colour instead of painting black.
 .headingChevron {
-    width: 14rem;
-    height: 14rem;
-    margin-right: 8rem;
+    width: 12rem;
+    height: 12rem;
     flex-shrink: 0;
     mask-repeat: no-repeat;
     mask-position: center;
