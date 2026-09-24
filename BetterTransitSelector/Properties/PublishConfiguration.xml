@@ -81,7 +81,7 @@ The mod replaces only the picker's UI. Selection is still written through the ga
 	<!--Link to the forum post where the mod can be discussed-->
 	<ForumLink Value="" />
 	<!--Version of the mod-->
-	<ModVersion Value="0.11" />
+	<ModVersion Value="0.12" />
 	<!--Recommended version of the base game to use the mod-->
 	<GameVersion Value="1.6.2*" />
 	<!--Dependency for the mod, can be set multiple times-->
@@ -90,10 +90,9 @@ The mod replaces only the picker's UI. Selection is still written through the ga
 	<!--Required DLC, can be set multiple times. Supported values are "Landmark Buildings", "San Fransisco Set", "Beach Properties", "Urban Promenades", "Modern Architecture"-->
 	<RequiredDLC Value="" />
 	<!--Change log for new version. Single line or multi line. Supports minimal markdown subset-->
-	<ChangeLog>## v0.11
-- Multi-unit trains now report the whole train: a 2x3 shows the passengers and length of both units, and the carriage figure is the total number of cars with the units after it - "6 (2 x 3)" where it used to read 3
-- Fix: consists counted carriages by the prefab's maximum rather than the number the game actually spawns
-- Made Recently used collapsible 		
+	<ChangeLog>## v0.12
+- Removed Platform length
+- Moved Pack and Vehicle page settings to main settings page 
 	</ChangeLog>
 	<!--External link, can be set multiple times. supported types are "discord", "github", "youtube", "twitch", "x", "paypal", "patreon", "buymeacoffee", "kofi", "crowdin", "gitlab", "gofundme"-->
 	<!--Supported values Public, Private, Unlisted-->

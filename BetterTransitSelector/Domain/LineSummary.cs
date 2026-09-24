@@ -45,20 +45,9 @@ namespace BetterTransitSelector.Domain {
         /// <summary>Seats aboard the line's vehicles right now, summed over the fleet.</summary>
         public int CapacityNow { get; }
 
-        /// <summary>
-        /// The shortest platform the line stops at, in metres; 0 when unknown or not a rail line.
-        /// </summary>
-        /// <remarks>
-        /// A realism figure, not a game rule: the game lets any train stop at any platform and
-        /// simply lets it overhang. The length is the track lane the vehicle stops on at each
-        /// waypoint, which for a station is the platform track. Only rail lines report it --
-        /// a bus stop's lane length says nothing about the stop.
-        /// </remarks>
-        public int PlatformLength { get; }
-
         public LineSummary(
             bool valid, int vehicleCount, int targetCount, float intervalSeconds, float durationSeconds,
-            int riders, int capacityNow, int platformLength) {
+            int riders, int capacityNow) {
             Valid           = valid;
             VehicleCount    = vehicleCount;
             TargetCount     = targetCount;
@@ -66,7 +55,6 @@ namespace BetterTransitSelector.Domain {
             DurationSeconds = durationSeconds;
             Riders          = riders;
             CapacityNow     = capacityNow;
-            PlatformLength  = platformLength;
         }
 
         /// <inheritdoc/>
@@ -86,8 +74,6 @@ namespace BetterTransitSelector.Domain {
             writer.Write(Riders);
             writer.PropertyName("capacityNow");
             writer.Write(CapacityNow);
-            writer.PropertyName("platformLength");
-            writer.Write(PlatformLength);
             writer.TypeEnd();
         }
     }

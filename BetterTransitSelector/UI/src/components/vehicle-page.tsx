@@ -6,7 +6,6 @@ import {
     carriagesText,
     countriesOf,
     flagUrl,
-    overhangs,
     projectedLoad,
     thumbnailOf,
     useAssetInfo,
@@ -71,7 +70,6 @@ export const VehiclePage = ({
     const description = text.descriptionOf(vehicle.id);
     const countries = s ? countriesOf(s) : [];
     const load = s ? projectedLoad(line, s.passengers) : null;
-    const tooLong = overhangs(line, s);
 
     const Row = ({ label, children, warn }: { label: string; children: React.ReactNode; warn?: boolean }) => (
         <div className={own.statRow}>
@@ -131,17 +129,7 @@ export const VehiclePage = ({
                     {s.energyType && <Row label={t("Power", "Power")}>{s.energyType}</Row>}
                     {s.carriages > 0 && <Row label={t("Carriages", "Carriages")}>{carriagesText(s)}</Row>}
                     {s.length > 0 && (
-                        <Row label={t("Length", "Length")} warn={tooLong}>
-                            <LengthValue metres={s.length} />
-                            {line.platformLength > 0 && (
-                                <>
-                                    {" · "}
-                                    {t("Platform", "platform")}
-                                    {" "}
-                                    <LengthValue metres={line.platformLength} />
-                                </>
-                            )}
-                        </Row>
+                        <Row label={t("Length", "Length")}><LengthValue metres={s.length} /></Row>
                     )}
                     {s.theme && <Row label={t("Theme", "Theme")}>{s.theme}</Row>}
                     {load !== null && (

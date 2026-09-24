@@ -6,7 +6,6 @@ import {
     carriagesText,
     countriesOf,
     flagUrl,
-    overhangs,
     projectedLoad,
     thumbnailOf,
     useLineSummary,
@@ -23,7 +22,6 @@ import { AccelerationValue, CountValue, LengthValue, SpeedValue } from "./stat-v
 import styles from "./vehicle-row.module.scss";
 
 const MULTI_UNIT_ICON = "Media/Game/Icons/MultiUnitTrain.svg";
-const WARNING_ICON = "Media/Misc/Warning.svg";
 // Unified Icon Library's coloured stars, the same pair Find It uses, so favourites look the same
 // across the two mods. UIL (PDX 74417) is a declared dependency in PublishConfiguration.xml.
 export const STAR_ON = "coui://uil/Colored/StarFilled.svg";
@@ -85,7 +83,6 @@ export const VehicleRow = ({
     const countries = countriesOf(vehicleStats);
     const line = useLineSummary();
     const rowLoad = vehicleStats ? projectedLoad(line, vehicleStats.passengers) : null;
-    const tooLong = overhangs(line, vehicleStats);
 
     const tooltip = vehicleStats && (
         <div className={styles.tip}>
@@ -143,17 +140,7 @@ export const VehicleRow = ({
             {vehicleStats.length > 0 && (
                 <div className={styles.tipRow}>
                     <div className={styles.tipLabel}>{t("Length", "Length")}</div>
-                    <div className={c(styles.tipValue, tooLong ? styles.tipOverloaded : "")}>
-                        <LengthValue metres={vehicleStats.length} />
-                        {line.platformLength > 0 && (
-                            <>
-                                {" · "}
-                                {t("Platform", "platform")}
-                                {" "}
-                                <LengthValue metres={line.platformLength} />
-                            </>
-                        )}
-                    </div>
+                    <div className={styles.tipValue}><LengthValue metres={vehicleStats.length} /></div>
                 </div>
             )}
             {vehicleStats.author && (
@@ -221,11 +208,6 @@ export const VehicleRow = ({
             ))}
 
             <div className={styles.name}>{name}</div>
-
-            {/* Longer than the line's shortest platform. The game still lets it stop -- it
-                overhangs -- so this is a warning for the player who cares how it looks, and
-                the tooltip carries the numbers. */}
-            {tooLong && <div className={styles.warning} style={asBackground(WARNING_ICON)} />}
 
             {/* The table is published once per load, so a row can render before it arrives -- and a
                 modded vehicle may legitimately have no row at all. Drop the block rather than

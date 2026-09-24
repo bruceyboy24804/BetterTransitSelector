@@ -139,17 +139,6 @@
     color: var(--warningColor);
 }
 
-// The overhang marker beside the name: the game's own warning glyph, small.
-.warning {
-    width: 18rem;
-    height: 18rem;
-    margin-left: 6rem;
-    flex-shrink: 0;
-    background-repeat: no-repeat;
-    background-position: center;
-    background-size: contain;
-}
-
 // A country flag in the tooltip's Countries row. 3:2 is the commonest flag ratio; the SVGs are
 // letterboxed into it with `contain`, so a square Swiss flag or a 1:2 UK flag still fits.
 .flag {

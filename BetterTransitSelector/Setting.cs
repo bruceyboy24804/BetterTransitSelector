@@ -20,8 +20,8 @@ namespace BetterTransitSelector
     /// off so the row does not start cluttered.
     /// </remarks>
     [FileLocation(nameof(BetterTransitSelector))]
-    [SettingsUIGroupOrder(kDisplayGroup, kStatsGroup, kAdvancedGroup, kCreatorsGroup)]
-    [SettingsUIShowGroupName(kDisplayGroup, kStatsGroup, kAdvancedGroup, kCreatorsGroup)]
+    [SettingsUIGroupOrder(kDisplayGroup, kStatsGroup, kPagesGroup, kCreatorsGroup)]
+    [SettingsUIShowGroupName(kDisplayGroup, kStatsGroup, kPagesGroup, kCreatorsGroup)]
     public class Setting : ModSetting
     {
         public const string kSection = "Main";
@@ -32,7 +32,7 @@ namespace BetterTransitSelector
 
         public const string kStatsGroup = "Stats";
 
-        public const string kAdvancedGroup = "Advanced";
+        public const string kPagesGroup = "Pages";
 
         public const string kCreatorsGroup = "Creators";
 
@@ -123,29 +123,18 @@ namespace BetterTransitSelector
         public bool RecentOpen { get; set; } = true;
 
         /// <summary>
-        /// Platform fit on train and subway lines: the warning marker on consists longer than
-        /// the line's shortest platform, the platform length in tooltips and pages, and the
-        /// "Fits" filter. Off, the platform is never measured and none of that appears.
-        /// </summary>
-        [SettingsUISection(kSection, kDisplayGroup)]
-        public bool PlatformFit { get; set; } = true;
-
-        /// <summary>
         /// Show an info button on pack headers that opens the upload's page (description,
         /// likes, links, screenshots) from the game's mod cache.
         /// </summary>
         /// <remarks>
-        /// Behind the options screen's Advanced toggle and off by default: the pages are a
-        /// reading feature beside a picking tool, and the buttons they add to every row and
-        /// header are noise for a player who only wants to pick.
+        /// Off by default: the pages are a reading feature beside a picking tool, and the
+        /// buttons they add to every row and header are noise for a player who only wants to pick.
         /// </remarks>
-        [SettingsUIAdvanced]
-        [SettingsUISection(kSection, kAdvancedGroup)]
+        [SettingsUISection(kSection, kPagesGroup)]
         public bool PackPages { get; set; }
 
         /// <summary>Show an info button on vehicle rows that opens the vehicle's page.</summary>
-        [SettingsUIAdvanced]
-        [SettingsUISection(kSection, kAdvancedGroup)]
+        [SettingsUISection(kSection, kPagesGroup)]
         public bool VehiclePages { get; set; }
 
         /// <summary>
@@ -213,9 +202,8 @@ namespace BetterTransitSelector
             FavouritesWidth = 0;
             FavouritesHeight = 0;
             Speed = SpeedUnit.Auto;
-            PlatformFit = false;
-            PackPages = false;
-            VehiclePages = false;
+            PackPages = true;
+            VehiclePages = true;
             ShowMaxSpeed = true;
             ShowPassengers = true;
             ShowAcceleration = false;

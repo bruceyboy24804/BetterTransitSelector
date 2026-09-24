@@ -6,7 +6,6 @@ import {
     filtersActive,
     flagUrl,
     useCountryName,
-    useLineSummary,
     useStatOptions,
     useT,
     type VehicleFilters,
@@ -72,7 +71,6 @@ export const VehicleFiltersBar = ({
     const [sortOpen, setSortOpen] = useState(false);
     const t = useT();
     const countryName = useCountryName();
-    const line = useLineSummary();
     const sourceLabel = (v: string) => t(`Source.${v}`, v);
 
     /** A row of text tool buttons, each a toggle. Hidden when there is nothing to choose between. */
@@ -261,30 +259,6 @@ export const VehicleFiltersBar = ({
                             );
                         })}
                     </VC.Scrollable>
-                </div>
-            )}
-
-            {/* Rail lines only: hide stock longer than the shortest platform. A single toggle
-                in the same button style, with the platform length on it so the cut-off is
-                visible. */}
-            {line.platformLength > 0 && (
-                <div className={styles.optionRow}>
-                    <div className={styles.optionLabel}>{t("Platform", "Platform")}</div>
-                    <div className={styles.optionContent}>
-                        <VC.ToolButton
-                            src=""
-                            selected={filters.fitsLine}
-                            multiSelect={true}
-                            className={c(
-                                VT.toolButton.button,
-                                styles.textButton,
-                                filters.fitsLine ? styles.selected : "",
-                            )}
-                            onSelect={() => onChange({ ...filters, fitsLine: !filters.fitsLine })}
-                        >
-                            {t("FitsLine", "Fits ({LENGTH} m)", { LENGTH: line.platformLength })}
-                        </VC.ToolButton>
-                    </div>
                 </div>
             )}
 

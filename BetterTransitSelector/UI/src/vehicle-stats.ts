@@ -100,8 +100,6 @@ export interface VehicleFilters {
     sources: string[];
     /** ISO codes; a vehicle passes when it declares any of them. */
     countries: string[];
-    /** Hide vehicles longer than the line's shortest platform. No effect off rail lines. */
-    fitsLine: boolean;
 }
 
 export const NO_FILTERS: VehicleFilters = {
@@ -112,7 +110,6 @@ export const NO_FILTERS: VehicleFilters = {
     minSpeed: 0,
     sources: [],
     countries: [],
-    fitsLine: false,
 };
 
 /** The declared countries as a list; [] when none. */
@@ -153,8 +150,7 @@ export const filtersActive = (f: VehicleFilters): boolean =>
     f.minPassengers > 0 ||
     f.minSpeed > 0 ||
     f.sources.length > 0 ||
-    f.countries.length > 0 ||
-    f.fitsLine;
+    f.countries.length > 0;
 
 /**
  * Whether a vehicle passes the filters.
@@ -166,12 +162,10 @@ export const filtersActive = (f: VehicleFilters): boolean =>
 export const passesFilters = (
     stats: VehicleStats | undefined,
     filters: VehicleFilters,
-    line?: LineSummary,
 ): boolean => {
     if (!filtersActive(filters)) return true;
     if (!stats) return false;
 
-    if (filters.fitsLine && line && overhangs(line, stats)) return false;
     if (filters.sources.length > 0 && !filters.sources.includes(sourceOf(stats))) return false;
     if (filters.countries.length > 0) {
         const mine = countriesOf(stats);
@@ -312,17 +306,7 @@ export interface LineSummary {
     riders: number;
     /** Seats aboard the fleet right now. riders / capacityNow is the overview's "usage". */
     capacityNow: number;
-    /** Shortest platform on the line in metres; 0 when unknown or not a rail line. */
-    platformLength: number;
 }
-
-/**
- * Whether a vehicle overhangs the line's shortest platform. A realism flag, not a game rule --
- * the game lets it stop anyway -- so it is a warning, never a hidden row. False when either
- * length is unknown.
- */
-export const overhangs = (line: LineSummary, stats: VehicleStats | undefined): boolean =>
-    line.platformLength > 0 && !!stats && stats.length > 0 && stats.length > line.platformLength;
 
 /**
  * The load a vehicle would run at on this line: today's riders spread over the fleet the line

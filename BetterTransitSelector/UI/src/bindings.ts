@@ -79,7 +79,6 @@ export const LINE_SUMMARY = new OneWayBinding<LineSummary>("lineSummary", {
     durationSeconds: 0,
     riders: 0,
     capacityNow: 0,
-    platformLength: 0,
 });
 
 // The sort order, chosen in the filter panel; persisted in the settings and read back through

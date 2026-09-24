@@ -21,7 +21,6 @@ import {
     useStatOptions,
     useFavourites,
     useFavouritePacks,
-    useLineSummary,
     useRecent,
     type StatsLookup,
     type VehicleFilters,
@@ -237,8 +236,7 @@ export const VehicleDropdown = ({
     };
     const matches = (vehicle: VehiclePrefab) => !q || haystack(vehicle).includes(q);
 
-    const line = useLineSummary();
-    const shown = available.filter((v) => matches(v) && passesFilters(stats(v), filters, line));
+    const shown = available.filter((v) => matches(v) && passesFilters(stats(v), filters));
 
     // Chip values come from the whole list, not the filtered one: narrowing to European stock must
     // not remove the North American chip that would undo it.
