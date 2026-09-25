@@ -18,23 +18,11 @@ namespace BetterTransitSelector.Systems {
 
     #endregion
 
-    /// <summary>
-    /// Publishes the selected transport line's fleet figures for the picker's summary row.
-    /// </summary>
-    /// <remarks>
-    /// A getter binding re-read each UI frame: the selection and the line's vehicles change at
-    /// any moment, and the read is a handful of component lookups on one entity, so there is
-    /// nothing worth caching. Runs on the main thread because the selected entity is only
-    /// available there; vanilla's own section schedules a job for the same reads, which for one
-    /// entity is more machinery than the work.
-    /// </remarks>
     public partial class BTS_LineSummarySystem : CommonUISystemBase {
-        /// <inheritdoc/>
         protected override string ModId => Mod.Instance.Id;
 
         private SelectedInfoUISystem m_SelectedInfo;
 
-        /// <inheritdoc/>
         protected override void OnCreate() {
             base.OnCreate();
             m_SelectedInfo = World.GetOrCreateSystemManaged<SelectedInfoUISystem>();
@@ -67,8 +55,6 @@ namespace BetterTransitSelector.Systems {
             var duration = StableDuration(line, lineData);
             var target   = TransportLineSystem.CalculateVehicleCount(interval, duration);
 
-            // The game's own demand reading: riders and seats summed over the live vehicles, the
-            // same call the transport overview's "usage" comes from.
             var riders   = 0;
             var capacity = 0;
             var count    = TransportUIUtils.GetRouteVehiclesCount(em, line, ref riders, ref capacity);
@@ -76,10 +62,6 @@ namespace BetterTransitSelector.Systems {
             return new LineSummary(true, count, target, interval, duration, riders, capacity);
         }
 
-        /// <summary>
-        /// One loop's duration, stops included -- vanilla's <c>CalculateStableDuration</c>, starting
-        /// from the first timed waypoint so every segment is counted once.
-        /// </summary>
         private float StableDuration(Entity line, TransportLineData lineData) {
             var em        = EntityManager;
             var waypoints = em.GetBuffer<RouteWaypoint>(line, true);

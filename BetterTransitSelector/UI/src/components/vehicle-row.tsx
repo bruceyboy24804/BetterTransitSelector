@@ -22,42 +22,30 @@ import { AccelerationValue, CountValue, LengthValue, SpeedValue } from "./stat-v
 import styles from "./vehicle-row.module.scss";
 
 const MULTI_UNIT_ICON = "Media/Game/Icons/MultiUnitTrain.svg";
-// Unified Icon Library's coloured stars, the same pair Find It uses, so favourites look the same
-// across the two mods. UIL (PDX 74417) is a declared dependency in PublishConfiguration.xml.
+
 export const STAR_ON = "coui://uil/Colored/StarFilled.svg";
 export const STAR_OFF = "coui://uil/Colored/StarOutline.svg";
 
-/**
- * Images are drawn as a background rather than an <img>, because `object-fit` does not exist in
- * this engine -- a thumbnail that is not square would stretch instead of letterboxing.
- */
 const asBackground = (src: string) => ({ backgroundImage: `url(${src})` });
 
 export interface VehicleRowProps {
     vehicle: VehiclePrefab;
     name: string;
     selected: boolean;
-    /** True when deselecting this would leave the line with no vehicle at all. */
+
     disabled: boolean;
-    /** Vanilla's showSecondary: false means the line needs no separate locomotive, so the
-     *  multi-unit marker carries no meaning here. See the section component. */
+
     showSecondary: boolean;
     stats: StatsLookup;
     onToggle: (vehicle: VehiclePrefab, selected: boolean) => void;
-    /**
-     * Rendered as a member of a group: indented and with a divider, so the hierarchy reads.
-     */
+
     variant?: boolean;
-    /** Opens the vehicle's page; offered as an info button when given. */
+
     onInfo?: () => void;
 }
 
 const INFO_ICON = "Media/Glyphs/Info.svg";
 
-/**
- * One selectable vehicle. Two-line layout (goal #5) with a large thumbnail (goal #4) and the stats
- * vanilla never sent (goal #6).
- */
 export const VehicleRow = ({
     vehicle,
     name,
@@ -74,11 +62,6 @@ export const VehicleRow = ({
     const favourite = useFavourites().has(vehicle.id);
     const t = useT();
 
-    // Every stat the prefab carries, regardless of which are switched on as row lines: the row
-    // shows what the player asked to see at a glance, the tooltip answers the occasional "and
-    // how long is it?" without turning that on for every row.
-    // The creator's own description, if they wrote one in the editor's Description field. The one
-    // place in the game it is shown for a vehicle.
     const description = useAssetText().descriptionOf(vehicle.id);
     const countries = countriesOf(vehicleStats);
     const line = useLineSummary();
@@ -100,9 +83,7 @@ export const VehicleRow = ({
                     <div className={styles.tipValue}><CountValue value={vehicleStats.passengers} /></div>
                 </div>
             )}
-            {/* What this line would look like on this stock: today's riders spread over the fleet
-                the line wants, all of this model. The question a player is actually asking when
-                they hover a row -- "would this cope?" -- answered before they pick it. */}
+
             {rowLoad !== null && (
                 <div className={styles.tipRow}>
                     <div className={styles.tipLabel}>{t("LoadOnThisLine", "Load on this line")}</div>
@@ -155,9 +136,7 @@ export const VehicleRow = ({
                     <div className={styles.tipValue}>{vehicleStats.groupTitle}</div>
                 </div>
             )}
-            {/* Where the creator says it runs, as flags only -- REV0's spec: "one line under
-                Pack, represented via country flag icons". Names were tried beside them and
-                dropped again; the vehicle page still lists them. */}
+
             {countries.length > 0 && (
                 <div className={styles.tipRow}>
                     <div className={styles.tipLabel}>{t("Countries", "Countries")}</div>
@@ -172,8 +151,7 @@ export const VehicleRow = ({
     );
 
     return (
-        // The whole row is the hit target: a click anywhere on it toggles the checkbox, so the
-        // player is not asked to aim at a 20rem box in a list they are scanning by name and icon.
+
         <Tooltip tooltip={tooltip} disabled={!tooltip} delayTime={400}>
         <div
             className={c(
@@ -184,11 +162,7 @@ export const VehicleRow = ({
             )}
             onClick={() => !disabled && onToggle(vehicle, !selected)}
         >
-            {/* The same checkbox for variants and top-level rows. Disabled means "this is the
-                last selection on the line", which vanilla refuses to clear.
 
-                The wrapper swallows the click so the row's handler does not fire as well --
-                otherwise the checkbox toggles twice and lands where it started. */}
             <div onClick={(e) => e.stopPropagation()}>
                 <VC.Checkbox
                     checked={selected}
@@ -197,10 +171,6 @@ export const VehicleRow = ({
                 />
             </div>
 
-            {/* On every row, variants included. An earlier version hid it inside a family on the
-                theory that the header's picture stood for all members -- true for liveries of
-                one train, wrong for a bus pack of seven different models, and moot now that a
-                creator can give each row its own icon. */}
             <div className={styles.thumb} style={asBackground(thumbnailOf(vehicle, stats))} />
 
             {vehicle.objectRequirementIcons?.map((icon, i) => (
@@ -209,18 +179,9 @@ export const VehicleRow = ({
 
             <div className={styles.name}>{name}</div>
 
-            {/* The table is published once per load, so a row can render before it arrives -- and a
-                modded vehicle may legitimately have no row at all. Drop the block rather than
-                printing a misleading "0 km/h". */}
             {vehicleStats && (
                 <div className={styles.stats}>
-                    {/* Numbers go through the game's own formatters, so they follow the player's
-                        unit system and locale: length in metres or feet, digit grouping as the rest
-                        of the UI does it. Speed is the exception -- see SpeedValue.
 
-                        Every line is gated on BOTH the setting and the value: a stat the player
-                        asked for but the prefab does not carry would otherwise render as a bare
-                        "Passengers: 0", which reads as a fact rather than as missing data. */}
                     {options.maxSpeed && vehicleStats.maxSpeed > 0 && (
                         <div className={styles.stat}>
                             {t("MaxSpeed", "Max speed") + ": "}
@@ -266,8 +227,6 @@ export const VehicleRow = ({
                 <div className={styles.multiUnit} style={asBackground(MULTI_UNIT_ICON)} />
             )}
 
-            {/* The vehicle page, the pack header's info button one tier down: hover to reveal,
-                own click so it never toggles the row. */}
             {onInfo && (
                 <div
                     className={styles.infoButton}
@@ -279,8 +238,6 @@ export const VehicleRow = ({
                 />
             )}
 
-            {/* The star, Find It's way: shown on hover, always shown once starred. Its own click
-                so starring never toggles the row's selection. The game ships both glyphs. */}
             <div
                 className={c(styles.star, favourite ? styles.starOn : "")}
                 style={asBackground(favourite ? STAR_ON : STAR_OFF)}

@@ -7,15 +7,6 @@ namespace BetterTransitSelector.Domain {
 
     #endregion
 
-    /// <summary>
-    /// What the game's own mod browser knows about an upload, for the picker's pack page.
-    /// </summary>
-    /// <remarks>
-    /// Every field is read from <c>pdx_mods_cache.json</c>, the cache the game keeps for its mod
-    /// browser -- no request of ours goes anywhere. Image fields are the PDX CDN URLs the cache
-    /// holds; whether the in-game view renders them is the UI's problem, and it falls back when
-    /// not. The cache only holds subscribed uploads, so a vanilla vehicle has no page.
-    /// </remarks>
     public sealed class PackInfo : IJsonWritable {
         public bool   Valid;
         public string Group = string.Empty;
@@ -27,12 +18,12 @@ namespace BetterTransitSelector.Domain {
         public string Version = string.Empty;
         public string ShortDescription = string.Empty;
         public string LongDescription = string.Empty;
-        /// <summary>Likes as a fraction of ratings on PDX -- in practice always 5; the count is the figure worth showing.</summary>
+
         public float  Rating;
-        /// <summary>The number of likes: a PDX rating is a thumbs-up, not a star.</summary>
+
         public int    RatingsTotal;
         public int    Subscriptions;
-        /// <summary>The upload's size in bytes.</summary>
+
         public long   Size;
         public string Cover = string.Empty;
         public string ForumLink = string.Empty;
@@ -40,7 +31,6 @@ namespace BetterTransitSelector.Domain {
         public readonly List<(string type, string url)> Links = new List<(string, string)>();
         public readonly List<(string id, string name, bool installed)> Dependencies = new List<(string, string, bool)>();
 
-        /// <inheritdoc/>
         public void Write(IJsonWriter writer) {
             writer.TypeBegin("BetterTransitSelector.PackInfo");
             writer.PropertyName("valid");            writer.Write(Valid);

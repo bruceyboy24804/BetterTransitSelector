@@ -13,7 +13,6 @@ import {
 import { setSorting } from "../bindings";
 import styles from "./vehicle-filters.module.scss";
 
-/** Setting.SortOrder names with their labels, in the order the row shows them. */
 const SORT_ORDERS: { value: string; label: string }[] = [
     { value: "Default", label: "Game order" },
     { value: "Name", label: "Name" },
@@ -27,14 +26,13 @@ const SORT_ORDERS: { value: string; label: string }[] = [
 const STEP_DOWN = "Media/Glyphs/ThickStrokeArrowDown.svg";
 const STEP_UP = "Media/Glyphs/ThickStrokeArrowUp.svg";
 
-/** How far one stepper click moves each minimum. Coarse on purpose: these are thresholds, not values. */
 const PASSENGER_STEP = 50;
 const SPEED_STEP = 20;
 
 export interface VehicleFiltersBarProps {
     filters: VehicleFilters;
     onChange: (filters: VehicleFilters) => void;
-    /** Values actually present in this list, so no option is offered that would match nothing. */
+
     themes: string[];
     energies: string[];
     authors: string[];
@@ -42,22 +40,9 @@ export interface VehicleFiltersBarProps {
     countries: string[];
 }
 
-/** Adds or removes a value, since every option here is a toggle rather than a radio. */
 const toggle = (values: string[], value: string): string[] =>
     values.includes(value) ? values.filter((v) => v !== value) : [...values, value];
 
-/**
- * The filter panel, laid out the way Find It lays out its options: label left, controls right.
- *
- * It reuses the game's own widgets throughout -- ToolButton with the tool-button theme for every
- * option, and the mouse-tool-options theme's start/end buttons for the steppers -- so the panel
- * reads as part of the game rather than as a web form dropped into it. Find It proved every one
- * of these pieces works inside a game panel, which is worth more than any styling of our own.
- *
- * Options are built from the values present in the current list, so a bus line offers no train
- * themes and an all-electric roster no diesel button. Offering a filter that can only empty the
- * list is worse than offering none.
- */
 export const VehicleFiltersBar = ({
     filters,
     onChange,
@@ -73,14 +58,12 @@ export const VehicleFiltersBar = ({
     const countryName = useCountryName();
     const sourceLabel = (v: string) => t(`Source.${v}`, v);
 
-    /** A row of text tool buttons, each a toggle. Hidden when there is nothing to choose between. */
     const buttonRow = (
         label: string,
         values: string[],
         selected: string[],
         key: "themes" | "energies" | "sources",
-        // Optional display name per value: Source's values are our own keys and get translated;
-        // themes and power types are the game's strings and show as they are.
+
         valueLabel: (value: string) => string = (v) => v,
     ) =>
         values.length > 1 && (
@@ -110,16 +93,6 @@ export const VehicleFiltersBar = ({
             </div>
         );
 
-    /**
-     * The sort order as a dropdown. Lives here rather than in the options screen because it is
-     * changed while looking at the list, and persists via the settings on the C# side.
-     *
-     * NOT vanilla's Dropdown: that one portals its menu to the document root, outside this
-     * panel, and the panel keeps the vehicle list open only by swallowing mousedown inside its
-     * own subtree -- so picking a sort option through a portalled menu would shut the list.
-     * The toggle is vanilla's widget with the game dropdown theme, and the menu is the same
-     * theme's classes on a div that opens inline, inside the panel, where the swallow holds.
-     */
     const current = SORT_ORDERS.find((o) => o.value === sorting) ?? SORT_ORDERS[0];
     const sortRow = (
         <div className={styles.optionRow}>
@@ -156,10 +129,6 @@ export const VehicleFiltersBar = ({
         </div>
     );
 
-    /**
-     * A stepper: [v] value [^]. The value is display-only, as in Find It; the steps are coarse
-     * because a minimum is a threshold, and "at least 300" is the question, never "at least 317".
-     */
     const stepper = (label: string, value: number, step: number, set: (v: number) => void) => (
         <div className={styles.optionRow}>
             <div className={styles.optionLabel}>{label}</div>
@@ -193,12 +162,9 @@ export const VehicleFiltersBar = ({
     return (
         <div className={styles.panel}>
             {sortRow}
-            {/* Source: vanilla stock versus subscribed. Both values are always offered when the
-                line has both, so "hide the vanilla ones" is one click on Modded. */}
+
             {buttonRow(t("Source", "Source"), sources, filters.sources, "sources", sourceLabel)}
 
-            {/* Countries as flag buttons, the way the creators asked countries be shown. Only
-                the countries some vehicle on this line declares, like every other row. */}
             {countries.length > 1 && (
                 <div className={styles.optionRow}>
                     <div className={styles.optionLabel}>{t("Countries", "Countries")}</div>
@@ -229,10 +195,6 @@ export const VehicleFiltersBar = ({
             {buttonRow(t("Theme", "Theme"), themes, filters.themes, "themes")}
             {buttonRow(t("Power", "Power"), energies, filters.energies, "energies")}
 
-            {/* Authors as checkboxes, one per line inside a height-capped scroll box. The author
-                count is unbounded -- it is however many creators the player subscribes to -- so
-                the list scrolls rather than the panel growing: the panel keeps one size and the
-                steppers below stay where the hand expects them. */}
             {authors.length > 1 && (
                 <div className={styles.optionRow}>
                     <div className={styles.optionLabel}>{t("Author", "Author")}</div>
@@ -241,10 +203,7 @@ export const VehicleFiltersBar = ({
                             const on = filters.authors.includes(author);
                             return (
                                 <div key={author} className={styles.checkRow}>
-                                    {/* The game's own checkbox -- the same widget the vehicle rows
-                                        use -- rather than Find It's tool-button imitation of one.
-                                        It brings its own border and tick, so it reads as a checkbox
-                                        without any styling of ours. */}
+
                                     <VC.Checkbox
                                         checked={on}
                                         onChange={() =>

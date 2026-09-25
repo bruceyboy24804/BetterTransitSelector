@@ -13,22 +13,10 @@ import { CountValue } from "./stat-value";
 import styles from "./line-summary.module.scss";
 
 export interface LineSummaryRowProps {
-    /** The primary selection: what the line spawns. */
     selected: VehiclePrefab[];
     stats: StatsLookup;
 }
 
-/**
- * What the current mix means for the line, in the panel's own InfoRow style beneath the picker.
- *
- * Fleet is the game's number -- how many vehicles the line wants for its interval and loop time
- * -- and is independent of the mix: the route is planned at a 1000 km/h cap, so track limits set
- * the loop time and a faster train does not shrink the fleet. It is here so the player sees the
- * consequence of a capacity choice next to the choice, not to suggest speed changes it.
- *
- * Capacity per departure is a range when the mix is mixed: the game picks a model at random for
- * each vehicle it spawns, so the honest figure is "between the smallest and the largest".
- */
 export const LineSummaryRow = ({ selected, stats }: LineSummaryRowProps) => {
     const line = useLineSummary();
     const t = useT();
@@ -84,11 +72,6 @@ export const LineSummaryRow = ({ selected, stats }: LineSummaryRowProps) => {
                 tooltip={t("FleetCapacity.Tooltip", "Passengers the whole fleet carries at once, at the average capacity of the selected models.")}
             />
 
-            {/* Demand against supply. "Now" is the game's own usage figure (riders over the seats
-                actually on the line); "with this mix" spreads the same riders over the fleet the
-                line wants at the selected models' average capacity. The difference is what the
-                selection changes. Coloured past the comfortable ceiling, since that is the
-                moment to pick bigger stock or raise the vehicle count. */}
             {line.capacityNow > 0 && (
                 <VC.InfoRow
                     left={t("LoadNow", "Load now")}

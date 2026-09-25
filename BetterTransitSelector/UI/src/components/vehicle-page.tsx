@@ -31,20 +31,13 @@ export interface VehiclePageProps {
     isDisabled: (vehicle: VehiclePrefab) => boolean;
     showSecondary: boolean;
     onToggle: (vehicle: VehiclePrefab, selected: boolean) => void;
-    /** Opens the upload's page, when the vehicle belongs to one. */
+
     onOpenPack?: () => void;
     onClose: () => void;
 }
 
 const dateOf = (iso: string) => (iso ? iso.slice(0, 10) : "");
 
-
-/**
- * One vehicle's page, the tier under the pack page: the big picture, the creator's description,
- * every stat, the consist car by car, where it runs, how it would do on this line, and the
- * file it came from. Nothing here is requested from anywhere -- the file block is the asset
- * database's own metadata and the rest is the stats table the rows already use.
- */
 export const VehiclePage = ({
     vehicle,
     stats,
@@ -63,7 +56,6 @@ export const VehiclePage = ({
     const line = useLineSummary();
     const s = stats(vehicle);
 
-    // Same rule as the pack page: the binding holds whichever asset was last asked for.
     const ready = info.valid && info.id === vehicle.id;
 
     const name = nameOf(vehicle);
@@ -91,8 +83,6 @@ export const VehiclePage = ({
                 />
             </div>
 
-            {/* The thumbnail at a size the creators' formation diagrams are legible at -- the
-                whole reason goal #4 exists, and the one place it can be shown big. */}
             <div className={own.picture} style={{ backgroundImage: `url(${thumbnailOf(vehicle, stats)})` }} />
 
             {s && (s.author || s.groupTitle) && (
@@ -142,9 +132,6 @@ export const VehiclePage = ({
                 </div>
             )}
 
-            {/* The consist, car by car: where the headline passengers and length come from.
-                Only for a multi-car prefab; a bus is its own one car and the table would say
-                nothing the stats block does not. */}
             {ready && info.cars.length > 1 && (
                 <div className={styles.section}>
                     <div className={styles.sectionHeading}>{t("Consist", "Consist")}</div>
