@@ -37,6 +37,13 @@
         <Compile Remove="Common\Rendering\**\*.cs" />
     </ItemGroup>
 
+    <!-- PrefabAsset's base implements interfaces from here; needed by Utils\LateComponentRecovery. -->
+    <ItemGroup>
+        <Reference Include="Colossal.AssetPipeline">
+            <Private>false</Private>
+        </Reference>
+    </ItemGroup>
+
     <!-- Localisation, Node Controller's layout: Locale.json holds every English string (settings
          and UI), Locale\<locale>.json the translations. LocaleHelper finds the siblings by the
          resource-name prefix "BetterTransitSelector.Locale." and takes the locale id from the

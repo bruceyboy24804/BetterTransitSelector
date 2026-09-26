@@ -11,18 +11,6 @@ namespace BetterTransitSelector.Domain {
 
     #endregion
 
-    /// <summary>
-    /// The player's starred vehicles, persisted across sessions and saves.
-    /// </summary>
-    /// <remarks>
-    /// Keyed by prefab name, never by entity: prefab entities are recreated on every load, so an
-    /// entity-keyed set would point at nothing by the next session. The name is what vanilla's
-    /// own selector writes as the row's <c>id</c>, so the UI can join on it with no extra lookup.
-    ///
-    /// Stored as a plain JSON array in the mod's ModsData folder -- the same shape and place Find
-    /// It keeps its favourites -- so it survives a mod update, is not tied to any one save, and
-    /// can be hand-edited or deleted to reset.
-    /// </remarks>
     public sealed class Favourites {
         private readonly string kPath;
 
@@ -30,20 +18,14 @@ namespace BetterTransitSelector.Domain {
 
         private readonly PrefixedLogger m_Log = new PrefixedLogger(nameof(Favourites));
 
-        /// <param name="fileName">
-        /// The file under ModsData/BetterTransitSelector. One instance per kind of key -- vehicle
-        /// names in one file, pack ids in another -- so the two sets can never collide.
-        /// </param>
         public Favourites(string fileName) {
             kPath = Path.Combine(EnvPath.kUserDataPath, "ModsData", "BetterTransitSelector", fileName);
         }
 
-        /// <summary>The starred prefab names, in no particular order.</summary>
         public IReadOnlyCollection<string> Names => m_Names;
 
         public bool Contains(string prefabName) => m_Names.Contains(prefabName);
 
-        /// <summary>Stars or unstars one vehicle and writes the file. Returns the new state.</summary>
         public bool Toggle(string prefabName) {
             if (string.IsNullOrEmpty(prefabName)) {
                 return false;
@@ -75,10 +57,7 @@ namespace BetterTransitSelector.Domain {
                         m_Names.Add(name);
                     }
                 }
-
-                m_Log.Info($"Loaded {m_Names.Count} favourites from {kPath}");
             } catch (Exception e) {
-                // A corrupt file loses the stars, not the game: log and start empty.
                 m_Log.Warn($"Could not read favourites from {kPath}: {e.Message}");
             }
         }

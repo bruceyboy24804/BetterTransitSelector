@@ -4,7 +4,7 @@
 
 	"Options.GROUP[BetterTransitSelector.BetterTransitSelector.Mod.Display]": "Display",
 	"Options.GROUP[BetterTransitSelector.BetterTransitSelector.Mod.Stats]": "Row stats",
-	"Options.GROUP[BetterTransitSelector.BetterTransitSelector.Mod.Advanced]": "Advanced",
+	"Options.GROUP[BetterTransitSelector.BetterTransitSelector.Mod.Pages]": "Info pages",
 	"Options.GROUP[BetterTransitSelector.BetterTransitSelector.Mod.Creators]": "Asset creators",
 
 	"Options.OPTION[BetterTransitSelector.BetterTransitSelector.Mod.Setting.ListWidth]": "List width",
@@ -18,8 +18,6 @@
 
 	"Options.OPTION[BetterTransitSelector.BetterTransitSelector.Mod.Setting.Speed]": "Speed unit",
 	"Options.OPTION_DESCRIPTION[BetterTransitSelector.BetterTransitSelector.Mod.Setting.Speed]": "The unit vehicle speeds are shown in. Follow game uses km/h with the metric unit system and mph with the imperial one.",
-	"Options.OPTION[BetterTransitSelector.BetterTransitSelector.Mod.Setting.PlatformFit]": "Platform fit",
-	"Options.OPTION_DESCRIPTION[BetterTransitSelector.BetterTransitSelector.Mod.Setting.PlatformFit]": "On train and subway lines, measure the line's shortest platform: mark consists that are longer, show the platform length in tooltips and pages, and offer the Fits filter.",
 	"Options.BetterTransitSelector.BetterTransitSelector.Mod.SPEEDUNIT[Auto]": "Follow game",
 	"Options.BetterTransitSelector.BetterTransitSelector.Mod.SPEEDUNIT[Kph]": "km/h",
 	"Options.BetterTransitSelector.BetterTransitSelector.Mod.SPEEDUNIT[Mph]": "mph",
@@ -131,7 +129,6 @@
 	"BetterTransitSelector.Country[IN]": "India",
 	"BetterTransitSelector.Country[RU]": "Russia",
 	"BetterTransitSelector.Country[AU]": "Australia",
-	"Editor.FIELD_TOOLTIP[BetterTransitSelector.Prefabs.BTS_TrainPackPrefab.m_UploadIcon]": "Old pack type from before 0.7. Recreate this pack from the BTS Pack template and re-point your vehicles; this asset fails to load for players who have the mod disabled.",
 	"Editor.FIELD_TOOLTIP[BetterTransitSelector.Prefabs.BTS_Pack.m_UploadIcon]": "Icon for the upload's folder in the picker (the heading that groups everything from one Paradox Mods upload). Set it on one pack in the upload. With a shared heading, offers this as its icon.",
 	"Editor.FIELD_TOOLTIP[BetterTransitSelector.Prefabs.BTS_Pack.m_Parent]": "A pack this pack sits under. The parent's name heads the folder and its icon is the folder's. Ship the parent asset in every upload that uses it. Leave None to use Display name or the upload instead.",
 	"Editor.FIELD[BetterTransitSelector.Prefabs.BTS_Pack.m_DisplayName]": "Display name",
@@ -154,8 +151,6 @@
 	"BetterTransitSelector.UI[LoadProjected.Tooltip]": "Today's riders spread over the fleet the line wants, if every vehicle were the selected models' average. Over 80% the line is crowded: pick bigger stock or raise the vehicle count to the number shown.",
 	"BetterTransitSelector.UI[LoadOnThisLine]": "Load on this line",
 	"BetterTransitSelector.UI[NeedsVehicles]": "needs {COUNT} vehicles",
-	"BetterTransitSelector.UI[Platform]": "Platform",
-	"BetterTransitSelector.UI[FitsLine]": "Fits ({LENGTH} m)",
 	"BetterTransitSelector.UI[Subscribers]": "Subscribers",
 	"BetterTransitSelector.UI[Requires]": "Requires",
 	"BetterTransitSelector.UI[NotInstalled]": "not installed",

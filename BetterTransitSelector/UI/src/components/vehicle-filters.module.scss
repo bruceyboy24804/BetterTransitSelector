@@ -1,11 +1,3 @@
-// Filter options in the style of Find It's options panel: one row per option, bold label on the
-// left, controls right-aligned, options as vanilla tool buttons that light up with the game's accent
-// colour when selected, and numbers as a [<] value [>] stepper from the mouse-tool-options theme.
-//
-// Engine constraints as elsewhere: flex-direction stated (default is column), no `gap`, colours
-// stated. Nothing here sizes itself from the popup -- this panel sits in the info panel, which has
-// a definite width, so flex: 1 is safe.
-
 .panel {
     display: flex;
     flex-direction: column;
@@ -37,8 +29,6 @@
     flex: 1 1 0;
 }
 
-// A tool button carrying text rather than an icon. The vanilla theme sizes buttons for a square
-// icon, so width is released and padding added; the height keeps the theme's so rows stay even.
 .textButton {
     width: auto;
     height: 28rem;
@@ -50,8 +40,7 @@
     align-items: center;
     justify-content: center;
     font-size: var(--fontSizeS);
-    // Find It's blackButton: the game's own menu text token and a near-black fill. The tool-button
-    // theme is built for icons and leaves text in a muted colour that vanished against the panel.
+
     color: var(--menuText1Normal);
     background-color: rgba(15, 16, 19, 1);
 }
@@ -60,30 +49,17 @@
     background-color: rgba(29, 31, 37, 1);
 }
 
-// A flag as a tool button: the theme's square icon slot is kept (the flag letterboxes into it),
-// only the size is set so a row of eight fits the panel.
 .flagButton {
     width: 44rem;
     height: 32rem;
     margin: 2rem;
 }
 
-// ToolButton always renders its icon element, and with an empty src that is an empty box with the
-// theme's margin still on it -- which is what pushed the text off-centre and widened every button.
-// Descendant selectors work here: Find It ships them and CS2 has complex selectors enabled.
 .textButton img {
     display: none;
 }
 
-// Find It's selected state: accent fill plus an accent border. Find It draws the border as an
-// absolutely positioned overlay; here it goes on the button itself. The overlay version rendered
-// as a small box in the button's corner, because ToolButton's markup gives it no positioned
-// ancestor of the button's size and it ended up sized by the text span it had to be nested in.
-// Every button carries a transparent border so the selected one does not grow by 2rem and
-// shift its neighbours.
 .textButton {
-    // Longhands, never the `border` shorthand: a var() inside a shorthand silently drops the
-    // whole declaration in this engine (verified live -- width came back "medium", style "none").
     border-width: 2rem;
     border-style: solid;
     border-color: transparent;
@@ -91,18 +67,10 @@
 
 .selected {
     background-color: var(--accentColorNormal);
-    // The lighter accent token (verified live: --accentColorLight exists, --accentColorHovered
-    // does not) stands in for Find It's 65%-opacity accent overlay.
+
     border-color: var(--accentColorLight);
 }
 
-// ---- Sort dropdown ----
-//
-// The toggle is vanilla's; the menu opens inline beneath it (see the component for why not the
-// portalled vanilla menu). Column so the menu stacks under the toggle rather than beside it.
-// The containing block for the menu: the menu is absolutely positioned against this, so it
-// hangs off the toggle's bottom edge and floats OVER the rows beneath rather than pushing them
-// down -- an inline menu stretched the panel and shoved the Sort label to the middle of it.
 .sortContent {
     position: relative;
     flex-direction: column;
@@ -113,8 +81,6 @@
     width: 100%;
 }
 
-// The theme's menu class brings the fill, border and blur; this only places it. Still inside
-// the panel's subtree, so the panel's mousedown swallow keeps the vehicle list open.
 .sortMenu {
     position: absolute;
     left: 0;
@@ -126,9 +92,6 @@
     z-index: 1;
 }
 
-// The theme's item class comes back "dropdown-item_R_l undefined" -- half of it is missing --
-// so padding and colour are stated here rather than trusted to it. Colour stated because the
-// menu's inherited text colour is black on a near-black fill, the same trap the rows hit.
 .sortItem {
     padding: 6rem 10rem;
     color: rgb(255, 255, 255);
@@ -144,9 +107,6 @@
     color: var(--accentColorNormal);
 }
 
-// The author list: takes the row's remaining width, one checkbox per line, capped at roughly
-// five rows and scrolled by the game's Scrollable beyond that. The cap is on the list, not the
-// panel: however many creators are subscribed, the panel keeps one height.
 .authorList {
     flex: 1 1 0;
     max-height: 150rem;
@@ -156,8 +116,7 @@
     display: flex;
     flex-direction: row;
     align-items: center;
-    // Right margin keeps the label clear of the scrollbar's track; the vertical margin spaces
-    // the lines now that they stack instead of wrapping.
+
     margin: 2rem 10rem 2rem 0;
 }
 
@@ -167,9 +126,6 @@
     color: var(--menuText1Normal);
 }
 
-
-
-// The stepper's value cell, between the theme's start and end buttons.
 .numberField {
     width: 75rem;
     height: 28rem;

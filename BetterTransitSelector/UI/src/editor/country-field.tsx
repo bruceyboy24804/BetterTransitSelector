@@ -1,22 +1,6 @@
 import { useCallback, useMemo } from "react";
 import type { ModuleRegistry, ModuleRegistryExtend } from "cs2/modding";
 
-/**
- * The editor field for BTS_Variant.m_Countries: the game's own FlagsField, copied line for
- * line from the bundle (game-ui/editor/widgets/fields/enum-field.tsx, `FlagsField`), with one
- * thing removed -- the "Select Nothing/Everything" button at the top of its menu.
- *
- * Everything else is vanilla's: the same FocusableEditorItem wrapper, Tooltip, editor-item row
- * classes, Dropdown with the editor-dropdown theme, DropdownFlagItem rows and DropdownToggle
- * with the same sounds. Nothing here is styled by this mod, so it looks identical to every
- * other flags field in the editor -- which the first attempt, built from generic widgets, did
- * not.
- *
- * The editor resolves widgets through the exported `editorWidgetComponents` map, read at render
- * time, so the FlagsField entry is wrapped: this component for the one widget path that is
- * ours, the original for every other flags field.
- */
-
 interface EnumMemberWire {
     displayName: unknown;
     value: [number, number];
@@ -38,14 +22,12 @@ interface WidgetRenderProps {
 const FLAGS_FIELD_KEY = "Game.UI.Widgets.FlagsField";
 const OUR_PATH = "m_Countries";
 
-// Vanilla's pieces, resolved from the bundle in installCountryField. Names are the bundle's
-// export names; the module paths are where the bundle registers them.
 let V: {
     FocusableEditorItem: React.ComponentType<{ disabled?: boolean; children?: React.ReactNode }>;
     Tooltip: React.ComponentType<{ tooltip?: React.ReactNode; children?: React.ReactNode }>;
-    /** Vanilla's `Localized` (Tu): renders any LocElement, including the { __Type, id, value } objects C# widgets send. */
+
     LocalizedString: React.ComponentType<{ value: unknown }>;
-    /** Vanilla's `renderLocalized` (yu): the same, to a string. */
+
     renderLocalized: (loc: ReturnType<typeof V.useLocalization>, value: unknown) => string;
     Dropdown: React.ComponentType<{ theme?: unknown; initialFocused?: unknown; content: React.ReactNode; children?: React.ReactNode }>;
     DropdownToggle: React.ComponentType<{ sounds?: unknown; className?: string; disabled?: boolean; children?: React.ReactNode }>;
@@ -67,13 +49,11 @@ let V: {
     defaultButtonSounds: Record<string, unknown>;
 };
 
-/** Vanilla's `jz`: a member's display name resolved to text, or " " when none matches. */
 const memberText = (loc: ReturnType<typeof V.useLocalization>, members: { displayName: unknown; value: bigint }[], value: bigint) => {
     const m = members.find((e) => e.value === value);
     return m ? V.renderLocalized(loc, m.displayName) : " ";
 };
 
-/** Vanilla's `FlagsField` (Iz), minus the toggle-all button. */
 const FlagsFieldNoToggle = ({
     label,
     value,
@@ -116,7 +96,7 @@ const FlagsFieldNoToggle = ({
                             initialFocused={0}
                             content={
                                 <>
-                                    {/* Vanilla renders its Select Nothing/Everything Button here. Removed. */}
+
                                     {enumMembers.map((e, n) => (
                                         <V.DropdownFlagItem
                                             key={n}
@@ -143,7 +123,6 @@ const FlagsFieldNoToggle = ({
     );
 };
 
-/** Vanilla's `BoundFlagsField` (yz): binds the widget props to the field above. */
 const BoundCountryField = ({ parent, path, props }: WidgetRenderProps) => {
     const id = V.useWidgetId(parent, path);
     const members = useMemo(
@@ -207,13 +186,14 @@ export const installCountryField = (registry: ModuleRegistry) => {
         defaultButtonSounds: button!.defaultButtonSounds,
     };
 
-    // Cast for the same reason as the section swap in index.tsx: ModuleRegistryExtend is typed
-    // for wrapping a component, but extend is a plain getter/setter swap and this export is a map.
     const swap = ((components: Record<string, React.ComponentType<WidgetRenderProps>>) => {
         const Original = components[FLAGS_FIELD_KEY];
         if (!Original) return components;
+
+        const isOurs = (path: unknown) =>
+            typeof path === "string" && (path === OUR_PATH || path.endsWith("." + OUR_PATH));
         const Routed = (p: WidgetRenderProps) =>
-            p.path === OUR_PATH || p.path?.endsWith("." + OUR_PATH) ? <BoundCountryField {...p} /> : <Original {...p} />;
+            isOurs(p.path) ? <BoundCountryField {...p} /> : <Original {...p} />;
         return { ...components, [FLAGS_FIELD_KEY]: Routed };
     }) as unknown as ModuleRegistryExtend;
 

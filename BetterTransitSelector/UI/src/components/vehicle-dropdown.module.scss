@@ -1,17 +1,3 @@
-// Our replacement for vanilla's carriage/engine dropdown.
-//
-// Engine constraints this file obeys (see vehicle-row.module.scss for the full list): every
-// row-wise flex container states `flex-direction: row` explicitly because the engine default is
-// column; there is no `gap`; images are background-image because `object-fit` does not exist.
-
-// The toggle row and its chevron come from vanilla's DropdownToggle, so this file styles only what
-// sits inside it.
-//
-// DropdownToggle wraps its children in a div of its own that does NOT set flex-direction, and the
-// engine's default is column. So this wrapper establishes the row itself: without it, `flex: 1 1 0`
-// on the label is a zero-height basis rather than a zero-width one and the label renders 700px wide
-// and 0px tall -- present in the DOM, invisible on screen. Never put a flex child directly into a
-// container whose direction you do not control.
 .toggleContent {
     display: flex;
     flex-direction: row;
@@ -26,21 +12,17 @@
     text-overflow: ellipsis;
 }
 
-// Count of what is selected, so a shut dropdown still says something useful.
 .summary {
     margin-left: 8rem;
     opacity: 0.6;
 }
 
-// Selected vehicles, shown whether or not the list is open -- vanilla did this and dropping it
-// meant a collapsed list showed no sign of what was picked.
 .pills {
     display: flex;
     flex-direction: row;
-    // Gameface supports flex-wrap; without it a fourth pill would squash the others to nothing.
+
     flex-wrap: wrap;
-    // Top padding matches the breathing room vanilla leaves between its toggle and the selected
-    // pills below it; ours sat flush against the toggle.
+
     padding: 6rem 8rem 4rem 8rem;
 }
 
@@ -69,41 +51,22 @@
     font-size: 0.85em;
 }
 
-// Carries the width the field fills: a plain div stretches to the menu because its own width IS
-// auto, which an input's is not.
-// NOT stretched. The menu is shrink-to-fit, so anything that sizes itself from the parent's width
-// is circular and the engine falls back to the full screen width -- measured at 3904px, twice.
-// A stretched wrapper does it just as surely as `width: 100%` on the input, because the wrapper
-// then depends on a parent whose width depends on its children. The field therefore takes its
-// natural width and the menu stays sized by its rows.
 .searchBar {
     margin: 2rem 8rem 4rem 8rem;
 }
 
-// A plain <input>: Gameface supports text inputs natively, and vanilla's TextInput has an
-// undocumented prop contract not worth reverse-engineering from a minified bundle. Network Tools
-// ships the same approach for its prefab search, which is the closest prior art available.
 .search {
-    // No `width: 100%`. The dropdown menu is shrink-to-fit, so a percentage width is circular and
-    // the engine resolves it against the available space instead -- which blew the whole menu out
-    // to the full 3840px screen width, rows and all. Measured live: menu 3904px before, panel-width
-    // after. Network Tools can use width:100% because its search sits in a fixed-width panel.
-    //
-    // An absolute width is fine -- it does not depend on the parent -- and the input's natural
-    // width was a third of the menu, which read as an afterthought.
     width: 420rem;
     margin: 0;
     padding: 6rem 8rem;
     border: 1rem solid rgba(255, 255, 255, 0.1);
     border-radius: 4rem;
     background-color: rgba(0, 0, 0, 0.3);
-    // Stated, not inherited: inside vanilla's dropdown menu the inherited colour is black, and the
-    // field sits on a near-black background. Same trap the rows hit.
+
     color: rgb(255, 255, 255);
-    // The game's own font-size token, so the field matches the panel at any UI scale.
+
     font-size: var(--fontSizeS);
-    // The engine draws a focus outline that does not match the game's styling; a border change
-    // carries the focus state instead.
+
     outline: none;
 }
 
@@ -111,16 +74,38 @@
     border-color: rgba(255, 255, 255, 0.25);
 }
 
-// The rows' scroll box: a fixed cap so the list is one size however many vehicles are
-// subscribed, scrolled by the game's own Scrollable past that. Absolute, not a percentage --
-// the popup is shrink-to-fit and vanilla rewrites its inline max-height every frame, so
-// nothing relative to it is dependable.
 .listScroll {
     max-height: 900rem;
 }
 
-// Small caps label over the recent block, in the same accent treatment as the panel titles so
-// it reads as a heading and not as a row. Colour stated: inside vanilla's menu it inherits black.
+.collapsibleHeading {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    padding: 6rem 8rem 2rem 8rem;
+    cursor: pointer;
+}
+
+.collapsibleHeading .sectionHeading {
+    flex: 1 1 0;
+    padding: 0;
+}
+
+.headingChevron {
+    width: 12rem;
+    height: 12rem;
+    flex-shrink: 0;
+    mask-repeat: no-repeat;
+    mask-position: center;
+    mask-size: contain;
+    background-color: var(--accentColorNormal);
+    opacity: 0.7;
+}
+
+.collapsibleHeading:hover .headingChevron {
+    opacity: 1;
+}
+
 .sectionHeading {
     padding: 6rem 8rem 2rem 8rem;
     color: var(--accentColorNormal);
@@ -128,8 +113,6 @@
     font-size: 11rem;
 }
 
-// Under the recent rows: a thicker rule than the per-row one, so they read as a block rather
-// than as the first few rows of the list.
 .starredDivider {
     height: 2rem;
     margin: 2rem 8rem;
@@ -141,37 +124,24 @@
     opacity: 0.6;
 }
 
-// ---- Filter strip beside the dropdown toggle, filter panel beneath ----
-//
-// These live in the selected-info panel, NOT inside vanilla's popup. That matters for sizing: the
-// panel has a definite width, so `flex: 1` and `align-self: stretch` resolve against a real number
-// here. The same declarations inside the shrink-to-fit popup were circular and blew the menu out to
-// full screen width -- the rules differ because the container does.
-
 .dropdownRow {
     display: flex;
     flex-direction: row;
     align-items: stretch;
 }
 
-// The dropdown takes the row's width less the strip. A zero basis with grow, so the strip's fixed
-// width is honoured first and the toggle gets the rest.
 .dropdownHost {
     flex: 1 1 0;
     display: flex;
     flex-direction: column;
 }
 
-// Holds the funnel and star buttons beside the toggle; exists so one element can swallow
-// mousedown for both.
 .buttonStrip {
     display: flex;
     flex-direction: row;
     align-items: stretch;
 }
 
-// The long thin button beside the toggle: stretches to the toggle's height (the row's height comes
-// from the toggle, so this is not circular), wide enough to hit, narrow enough to look like an edge.
 .filterToggle {
     display: flex;
     flex-direction: column;
@@ -185,8 +155,6 @@
     cursor: pointer;
 }
 
-// Tinted while any filter narrows the list, so a shut panel never silently hides the reason the
-// list is short.
 .filterToggleActive {
     background-color: rgba(120, 200, 255, 0.2);
     border-color: rgba(120, 200, 255, 0.6);
@@ -200,22 +168,12 @@
     background-size: contain;
 }
 
-// A separate floating panel beside the info panel, the way Find It floats its filters beside its
-// asset panel: absolutely positioned off the right edge, the game's own panel colour, blur and
-// corner radius, so it reads as a sibling panel rather than a section inserted into this one.
-//
-// Portalled to the document root and placed by measured screen coordinates (set inline), because
-// the info panel scrolls inside an overflow:hidden container that clips anything positioned within
-// it. Same reason vanilla's dropdown menu portals out.
-// The positioned column that holds the panels; each panel is a card inside it. Both panels
-// open -> two cards stacked; one open -> that card at the top, so favourites take the sorting
-// panel's place when it is shut rather than floating below a gap.
 .panelColumn {
     position: absolute;
     margin-left: 10rem;
     display: flex;
     flex-direction: column;
-    // Each card sets its own width; the column must not stretch the narrow one to the wide one.
+
     align-items: flex-start;
 }
 
@@ -235,13 +193,10 @@
     border-bottom-right-radius: var(--panelRadius);
 }
 
-// The favourites card holds full vehicle rows -- thumbnail, name, two stat lines, star -- which
-// at the filter card's width wrapped the name one word per line. Sized for the row instead.
 .favouritesPanel {
     width: 620rem;
 }
 
-// The pack page card: wide enough for a cover image and the description to read well.
 .packPanel {
     width: 620rem;
 }
@@ -250,8 +205,6 @@
     max-height: 1100rem;
 }
 
-// Caps the favourites list; past this the game's Scrollable takes over. Roughly ten rows --
-// enough to see a pinned pack whole, short enough to stay on screen under the sorting panel.
 .favouritesScroll {
     max-height: 700rem;
 }
@@ -264,30 +217,16 @@
     margin: 5rem;
 }
 
-// ---- Menu background ----
-//
-// Vanilla's dropdown popup is given an inline max-height of "space to the bottom of the screen"
-// every frame, and the engine renders the menu's auto height AS that value -- so a short list sits
-// in a box that runs to the screen edge, and the menu's background paints the empty remainder.
-// Nothing in CSS or inline style wins against a value rewritten per frame, so instead of fighting
-// the box, stop painting it: the theme's menu class is made transparent and the background moves
-// to this wrapper, which is sized by its content. The stretched box is still there; it is just
-// invisible.
 .menuBody {
     display: flex;
     flex-direction: column;
     background-color: rgba(15, 16, 19, 1);
-    // Vanilla's menu draws a 2px border and a backdrop blur as well as its fill; all three have
-    // to move here, because each one painted the full stretched box -- the border as a faint
-    // outline down to the screen edge, the blur as a lighter textured slab over the map.
+
     border: 2px solid rgba(60, 64, 76, 1);
     border-radius: 3rem;
     backdrop-filter: blur(4px);
 }
 
-// Merged into the theme's dropdownMenu slot. !important because the theme's own class sets the
-// background and the two are equal in specificity; whichever stylesheet loads later would win,
-// and that order is not ours to control.
 .menuTransparent {
     background-color: transparent !important;
     border: none !important;

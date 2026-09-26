@@ -1,7 +1,3 @@
-// The vehicle page's own pieces; the card, header, close, flags and sections come from
-// pack-page.module.scss. Same engine rules: rows state flex-direction, images as backgrounds.
-
-// The thumbnail big: a formation diagram drawn into a 4:3-ish icon needs this much to read.
 .picture {
     width: 100%;
     height: 240rem;
@@ -48,7 +44,6 @@
     white-space: pre;
 }
 
-// One car: count, name, seats, length in columns.
 .car {
     display: flex;
     flex-direction: row;

@@ -5,15 +5,6 @@ namespace BetterTransitSelector.Domain {
 
     #endregion
 
-    /// <summary>
-    /// Which stats the rows should show, mirrored from the mod's settings.
-    /// </summary>
-    /// <remarks>
-    /// Sent as its own binding rather than baked into each row's stats: the values are the same for
-    /// every vehicle, and the stats table is rebuilt only on load, whereas these change the moment
-    /// the player touches a checkbox. Keeping them apart lets the UI re-render immediately without
-    /// the table being recomputed.
-    /// </remarks>
     public readonly struct StatOptions : IJsonWritable {
         public bool MaxSpeed { get; }
         public bool Passengers { get; }
@@ -23,10 +14,8 @@ namespace BetterTransitSelector.Domain {
         public bool Carriages { get; }
         public bool Length { get; }
 
-        /// <summary>The chosen order, as its enum name so the UI reads it without a shared numbering.</summary>
         public string Sorting { get; }
 
-        /// <summary>Minimum width of the open list in UI units; 0 means fit to contents.</summary>
         public int ListWidth { get; }
 
         public int ListHeight { get; }
@@ -35,10 +24,10 @@ namespace BetterTransitSelector.Domain {
 
         public int FavouritesHeight { get; }
 
-        /// <summary>"Auto" | "Kph" | "Mph" -- the enum name, so the UI reads it without a shared numbering.</summary>
         public string SpeedUnit { get; }
 
-        /// <summary>Whether pack headers offer the info button that opens the upload's page.</summary>
+        public bool RecentOpen { get; }
+
         public bool PackPages { get; }
 
         public bool VehiclePages { get; }
@@ -50,6 +39,7 @@ namespace BetterTransitSelector.Domain {
             FavouritesWidth  = setting.FavouritesWidth;
             FavouritesHeight = setting.FavouritesHeight;
             SpeedUnit    = setting.Speed.ToString();
+            RecentOpen   = setting.RecentOpen;
             PackPages    = setting.PackPages;
             VehiclePages = setting.VehiclePages;
             MaxSpeed     = setting.ShowMaxSpeed;
@@ -61,7 +51,6 @@ namespace BetterTransitSelector.Domain {
             Length       = setting.ShowLength;
         }
 
-        /// <inheritdoc/>
         public void Write(IJsonWriter writer) {
             writer.TypeBegin("BetterTransitSelector.StatOptions");
             writer.PropertyName("maxSpeed");
@@ -90,6 +79,8 @@ namespace BetterTransitSelector.Domain {
             writer.Write(FavouritesHeight);
             writer.PropertyName("speedUnit");
             writer.Write(SpeedUnit ?? "Auto");
+            writer.PropertyName("recentOpen");
+            writer.Write(RecentOpen);
             writer.PropertyName("packPages");
             writer.Write(PackPages);
             writer.PropertyName("vehiclePages");

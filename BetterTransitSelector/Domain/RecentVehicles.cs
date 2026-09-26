@@ -11,17 +11,7 @@ namespace BetterTransitSelector.Domain {
 
     #endregion
 
-    /// <summary>
-    /// The last few vehicles the player picked, newest first, persisted across sessions.
-    /// </summary>
-    /// <remarks>
-    /// Keyed by prefab name for the same reason as <see cref="Favourites"/>. Recorded on select
-    /// only -- deselecting a vehicle is not "using" it -- and capped at three: the point is the
-    /// handful you are actively assigning across lines right now, not a history. Stored next to
-    /// the favourites file, same shape.
-    /// </remarks>
     public sealed class RecentVehicles {
-        /// <summary>How many to keep. Three: what fits "above the fold" without becoming a list of its own.</summary>
         public const int kCapacity = 3;
 
         private static readonly string kPath = Path.Combine(
@@ -31,10 +21,8 @@ namespace BetterTransitSelector.Domain {
 
         private readonly PrefixedLogger m_Log = new PrefixedLogger(nameof(RecentVehicles));
 
-        /// <summary>Newest first.</summary>
         public IReadOnlyList<string> Names => m_Names;
 
-        /// <summary>Moves or inserts one vehicle at the front, dropping the oldest past the cap.</summary>
         public void Record(string prefabName) {
             if (string.IsNullOrEmpty(prefabName)) {
                 return;

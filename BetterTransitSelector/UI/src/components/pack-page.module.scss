@@ -1,6 +1,3 @@
-// The pack page card. Engine rules as elsewhere: rows state flex-direction, no gap, images as
-// background-image, colour stated where the panel's inherited colour is not reliable.
-
 .page {
     position: relative;
     display: flex;
@@ -18,7 +15,7 @@
 
 .title {
     flex: 1 1 0;
-    // Clear of the close button in the corner.
+
     margin-right: 32rem;
     font-size: var(--fontSizeL);
     font-weight: bold;
@@ -26,16 +23,12 @@
     overflow-wrap: break-word;
 }
 
-// The game's own close button (IconButton + round-highlight + the panel theme's closeButton
-// class carry the look); this only pins it to the card's corner, since our card is not a
-// vanilla panel header for that class to position against.
 .close {
     position: absolute;
     top: 6rem;
     right: 6rem;
 }
 
-// 16:9 cover, the ratio PDX covers are cropped to.
 .cover {
     width: 100%;
     height: 337rem;
@@ -59,7 +52,6 @@
     opacity: 0.6;
 }
 
-// One of the three PDX figures: tinted glyph then number, spaced like the mod browser's row.
 .figure {
     display: flex;
     flex-direction: row;
@@ -95,8 +87,6 @@
     background-size: contain;
 }
 
-// The markdown body. The game's FormattedParagraphs brings its own paragraph/heading styling;
-// this only bounds it so a long description does not run the card off the screen.
 .description {
     max-height: 400rem;
     overflow-y: auto;
@@ -151,7 +141,6 @@
     margin-bottom: 8rem;
 }
 
-// Text tool buttons, the filter panel's treatment.
 .link {
     width: auto;
     height: 28rem;
