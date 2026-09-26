@@ -42,6 +42,8 @@ Nothing is required: everything in one upload lists as one folder, titled by the
 2. On each vehicle, **Add Component -> Better Transit Selector -> BTS_Variant**. Set **Placeholder** to your pack and **Index** to the vehicle's position under it. Leave gaps in the indexes so a later variant can slot between existing ones.
 3. Ship the pack asset in the same upload as the vehicles (the editor packages it automatically as a dependency).
 
+Editor Asset Category Override on a pack is managed by the mod (it files the pack under My Packs / Shared Packs) - any extra categories you add are kept.
+
 Vehicles in the upload without the component still list under the upload, beside the variants. Packs made before 0.7 must be recreated from the template and the vehicles re-pointed (the components were renamed in 0.8: BTS_Pack, BTS_Variant).
 
 **One heading across several uploads (Display name).** Publishing each model as its own upload but want them under one heading? On each model's BTS_Pack type the same **Display name** - e.g. "DB Regio BaWü Trains". Every pack with that display name lists under one folder, whoever published it; case and spacing do not matter, spelling does. The heading and icon are taken from the oldest published member (set **Upload Icon** on your pack to offer one), so they do not change as later uploads join. No file to share.
@@ -81,7 +83,7 @@ The mod replaces only the picker's UI. Selection is still written through the ga
 	<!--Link to the forum post where the mod can be discussed-->
 	<ForumLink Value="" />
 	<!--Version of the mod-->
-	<ModVersion Value="0.12" />
+	<ModVersion Value="0.15" />
 	<!--Recommended version of the base game to use the mod-->
 	<GameVersion Value="1.6.2*" />
 	<!--Dependency for the mod, can be set multiple times-->
@@ -90,9 +92,9 @@ The mod replaces only the picker's UI. Selection is still written through the ga
 	<!--Required DLC, can be set multiple times. Supported values are "Landmark Buildings", "San Fransisco Set", "Beach Properties", "Urban Promenades", "Modern Architecture"-->
 	<RequiredDLC Value="" />
 	<!--Change log for new version. Single line or multi line. Supports minimal markdown subset-->
-	<ChangeLog>## v0.12
-- Removed Platform length
-- Moved Pack and Vehicle page settings to main settings page 
+	<ChangeLog>## v0.15
+- revert a change 
+
 	</ChangeLog>
 	<!--External link, can be set multiple times. supported types are "discord", "github", "youtube", "twitch", "x", "paypal", "patreon", "buymeacoffee", "kofi", "crowdin", "gitlab", "gofundme"-->
 	<!--Supported values Public, Private, Unlisted-->

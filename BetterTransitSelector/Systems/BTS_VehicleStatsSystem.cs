@@ -530,7 +530,12 @@ namespace BetterTransitSelector.Systems {
                     over = prefabBase.AddComponent<EditorAssetCategoryOverride>();
                     EntityManager.AddComponent<EditorAssetCategoryOverrideData>(packs[i]);
                 }
-                over.m_IncludeCategories = new[] { category };
+                // Only our own "Better Transit Selector/..." entry is managed here; anything the creator
+                // added themselves is kept, so the field no longer looks like it "resets".
+                var kept = (over.m_IncludeCategories ?? new string[0])
+                           .Where(c => !string.IsNullOrEmpty(c)
+                                       && !c.StartsWith("Better Transit Selector/", System.StringComparison.OrdinalIgnoreCase));
+                over.m_IncludeCategories = new[] { category }.Concat(kept).ToArray();
             }
 
             packs.Dispose();

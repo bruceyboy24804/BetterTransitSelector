@@ -49,6 +49,8 @@ namespace BetterTransitSelector {
 
         /// <inheritdoc/>
         protected override void RegisterSystems(UpdateSystem updateSystem) {
+            // First, so the BTS components are known/recovered before the systems that read them exist.
+            updateSystem.UpdateAt<BTS_PrefabComponentSystem>(SystemUpdatePhase.PrefabUpdate);
             updateSystem.UpdateAt<BTS_VehicleStatsSystem>(SystemUpdatePhase.UIUpdate);
             updateSystem.UpdateAt<BTS_LineSummarySystem>(SystemUpdatePhase.UIUpdate);
         }
