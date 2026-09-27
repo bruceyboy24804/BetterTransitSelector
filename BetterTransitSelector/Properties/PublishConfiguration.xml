@@ -16,7 +16,7 @@ The vanilla "Select carriage model" list inside a transport line's info panel is
 ### Included features
 
 - **Search** - a text box above the list filters as you type. Matches the vehicle name, its author and its pack, so "REV0" or "bwegt" finds the whole pack. Appears once the list is long enough to need it.
-- **Sorting and filtering** - the funnel button beside the list opens a panel. Sort by game order, name, newest, oldest, fastest, most passengers or longest; filter by source (vanilla / modded), theme (European / North American), power type, author, country of operation, minimum passengers, minimum speed, and - on train and subway lines - whether the consist fits the line's shortest platform. The list stays open while you work in the panel, and the funnel lights up while a filter is active so a short list never hides its reason.
+- **Sorting and filtering** - the funnel button beside the list opens a panel. Sort by game order, name, newest, oldest, fastest, most passengers or longest; filter by source (vanilla / modded), theme (European / North American), power type, author, country of operation, minimum passengers, minimum speed. The list stays open while you work in the panel, and the funnel lights up while a filter is active so a short list never hides its reason.
 - **Favourites** - star any vehicle, family or pack in the list. The star button beside the list opens a Favourites panel listing them by category, with the same checkboxes, so your regular fleet is one click away on every line. Favourites are saved per player, not per save.
 - **Recently used** - the last three vehicles you picked sit at the top of the list under their own heading. The order is fixed while the list is open, so picking one does not reshuffle the others.
 - **Grouping** - vehicles uploaded together are one collapsible group, headed by the upload's published name with its author and date, and with a checkbox that selects or clears the whole pack. Variants of one model (lengths, liveries, formations) are grouped again inside, and creators can file several uploads under one shared heading - one folder for a whole operator or brand, whoever published the models.
@@ -79,7 +79,7 @@ The mod replaces only the picker's UI. Selection is still written through the ga
 	<!--Tag, can be set multiple times-->
 	<Tag Value="Code Mod" />
 	<!--Link to the forum post where the mod can be discussed-->
-	<ForumLink Value="" />
+	<ForumLink Value="https://forum.paradoxplaza.com/forum/threads/better-transit-selector.1942796/" />
 	<!--Version of the mod-->
 	<ModVersion Value="1.0" />
 	<!--Recommended version of the base game to use the mod-->
@@ -94,6 +94,8 @@ The mod replaces only the picker's UI. Selection is still written through the ga
 - Release
 	</ChangeLog>
 	<!--External link, can be set multiple times. supported types are "discord", "github", "youtube", "twitch", "x", "paypal", "patreon", "buymeacoffee", "kofi", "crowdin", "gitlab", "gofundme"-->
+	<ExternalLink Type="github" Url="https://github.com/bruceyboy24804/BetterTransitSelector" />
+	<ExternalLink Type="discord" Url="https://discord.gg/QrbPe44yv" />
 	<!--Supported values Public, Private, Unlisted-->
 	<AccessLevel Value="Public" />
 </Publish>
