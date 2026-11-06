@@ -1,0 +1,516 @@
+// Gameface: every element is a flex COLUMN by default, so every row-wise box states flex-direction: row;
+// there is no gap (margins instead), and a var() inside a shorthand drops the declaration (longhands).
+
+// ---- The row in the line's vehicle section ----
+
+.row {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    padding: 6rem 8rem;
+    margin-top: 6rem;
+    border-top: 1rem solid rgba(255, 255, 255, 0.08);
+    color: rgb(255, 255, 255);
+}
+
+.rowTitle {
+    font-weight: bold;
+    font-size: var(--fontSizeS);
+}
+
+.summary {
+    flex: 1 1 0;
+    display: flex;
+    flex-direction: row;
+    align-items: baseline;
+    justify-content: flex-end;
+    white-space: pre;
+    margin: 0 8rem;
+    font-size: var(--fontSizeS);
+    opacity: 0.8;
+}
+
+// ---- The floating window ----
+
+.window {
+    position: absolute;
+    width: 760rem;
+    display: flex;
+    flex-direction: column;
+    color: rgb(255, 255, 255);
+    background-color: var(--panelColorDark);
+    backdrop-filter: var(--panelBlur);
+    border-top-left-radius: var(--panelRadius);
+    border-top-right-radius: var(--panelRadius);
+    border-bottom-left-radius: var(--panelRadius);
+    border-bottom-right-radius: var(--panelRadius);
+    pointer-events: auto;
+}
+
+.windowHeader {
+    position: relative;
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    padding: 10rem 44rem 10rem 14rem;
+    cursor: move;
+    background-color: rgba(0, 0, 0, 0.25);
+    border-top-left-radius: var(--panelRadius);
+    border-top-right-radius: var(--panelRadius);
+}
+
+.windowTitle {
+    flex: 1 1 0;
+    display: flex;
+    flex-direction: row;
+    align-items: baseline;
+    white-space: pre;
+    font-size: var(--fontSizeL);
+    font-weight: bold;
+}
+
+.lineName {
+    font-weight: normal;
+    opacity: 0.7;
+}
+
+.close {
+    position: absolute;
+    top: 6rem;
+    right: 6rem;
+}
+
+.windowBody {
+    display: flex;
+    flex-direction: column;
+    padding: 6rem 14rem 12rem 14rem;
+}
+
+.sectionTitle {
+    display: flex;
+    flex-direction: row;
+    align-items: baseline;
+    padding: 8rem 0 4rem 0;
+    border-bottom: 1rem solid rgba(255, 255, 255, 0.1);
+}
+
+.sectionLabel {
+    color: var(--accentColorNormal);
+    text-transform: uppercase;
+    font-size: 12rem;
+}
+
+.zoom {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    margin-left: 8rem;
+}
+
+// Drag ghost: above everything, and click-through so the track under it still gets the hover.
+.ghost {
+    position: absolute;
+    width: 56rem;
+    height: 56rem;
+    z-index: 100;
+    pointer-events: none;
+    opacity: 0.85;
+    background-size: contain;
+    background-repeat: no-repeat;
+    background-position: center;
+}
+
+// ---- The train ----
+
+.actions {
+    display: flex;
+    flex-direction: row;
+    flex-wrap: wrap;
+    align-items: center;
+    padding: 4rem 0;
+}
+
+.pickedName {
+    flex: 1 1 0;
+    margin-right: 8rem;
+    font-size: var(--fontSizeS);
+    white-space: normal;
+}
+
+.textButton {
+    width: auto;
+    height: 26rem;
+    padding: 0 8rem;
+    margin: 2rem;
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: center;
+    font-size: var(--fontSizeS);
+    color: var(--menuText1Normal);
+    background-color: rgba(15, 16, 19, 1);
+    border-width: 2rem;
+    border-style: solid;
+    border-color: transparent;
+    border-radius: 4rem;
+}
+
+.textButton:hover {
+    background-color: rgba(29, 31, 37, 1);
+}
+
+.textButton img {
+    display: none;
+}
+
+.on {
+    background-color: var(--accentColorNormal);
+    border-color: var(--accentColorLight);
+}
+
+// Per-car driving figures.
+.driving {
+    display: flex;
+    flex-direction: column;
+    padding: 4rem 6rem;
+    margin: 2rem 0 4rem 0;
+    background-color: rgba(0, 0, 0, 0.2);
+    border-radius: 4rem;
+}
+
+.statRow {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+}
+
+.statLabel {
+    width: 120rem;
+    font-size: var(--fontSizeS);
+    opacity: 0.8;
+}
+
+.statValue {
+    width: 110rem;
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+    align-items: baseline;
+    white-space: pre;
+    font-size: var(--fontSizeS);
+}
+
+// Overridden figures stand out, so a car running non-stock values is visible at a glance.
+.statEdited {
+    color: var(--accentColorNormal);
+}
+
+// ---- The floating car card (the 3D view) ----
+
+.card {
+    display: flex;
+    flex-direction: column;
+    padding: 4rem 8rem 5rem 8rem;
+}
+
+.cardRow {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    height: 28rem;
+}
+
+.cardLabel {
+    flex: 1 1 0;
+    font-size: 12rem;
+    opacity: 0.75;
+    white-space: nowrap;
+}
+
+.cardValue {
+    width: 84rem;
+    height: 24rem;
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+    align-items: baseline;
+    white-space: pre;
+    font-size: 12rem;
+}
+
+// Vanilla's tool-option stepper (VT.mouseToolOptions content / start-button / number-field / end-button) supplies
+// the look; these only fit it into the card's rows.
+.cardStepper {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    flex: 0 0 auto;
+}
+
+.cardStep {
+    width: 24rem;
+    height: 24rem;
+    flex: 0 0 auto;
+}
+
+// Vanilla's reset button (VT.visualCustomize action-button) at the end of each row.
+.cardReset.cardReset {
+    width: 22rem;
+    height: 22rem;
+    margin-left: 6rem;
+    flex: 0 0 auto;
+}
+
+.menuAnchor {
+    position: relative;
+}
+
+.recipeMenu {
+    position: absolute;
+    left: 0;
+    top: 100%;
+    width: 360rem;
+    margin-top: 2rem;
+    z-index: 10;
+}
+
+.recipeItem {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    padding: 4rem 8rem;
+    color: rgb(255, 255, 255);
+    cursor: pointer;
+}
+
+.recipeItem:hover {
+    background-color: rgba(255, 255, 255, 0.1);
+}
+
+.recipeThumb {
+    width: 36rem;
+    height: 36rem;
+    flex-shrink: 0;
+    background-size: contain;
+    background-repeat: no-repeat;
+    background-position: center;
+}
+
+.recipeName {
+    flex: 1 1 0;
+    margin-left: 8rem;
+    white-space: normal;
+    font-size: var(--fontSizeS);
+}
+
+// Running trains against the built train, and the rolling refit that replaces them.
+.refit {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    padding: 4rem 6rem;
+    margin: 4rem 0;
+    background-color: rgba(255, 255, 255, 0.05);
+    border-radius: 4rem;
+}
+
+.refitText {
+    flex: 1 1 0;
+    white-space: normal;
+    font-size: var(--fontSizeS);
+    opacity: 0.85;
+}
+
+.status {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    padding: 4rem 6rem;
+    margin: 4rem 0;
+    background-color: rgba(255, 170, 0, 0.12);
+    border-radius: 4rem;
+}
+
+.statusText {
+    flex: 1 1 0;
+    white-space: normal;
+    font-size: var(--fontSizeS);
+    color: var(--warningColor);
+}
+
+// ---- The catalogue ----
+
+.filterBar {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    flex-wrap: wrap;
+    padding: 6rem 0 2rem 0;
+}
+
+.search {
+    width: 260rem;
+    margin: 0 8rem 0 0;
+    padding: 6rem 8rem;
+    border: 1rem solid rgba(255, 255, 255, 0.1);
+    border-radius: 4rem;
+    background-color: rgba(0, 0, 0, 0.3);
+    color: rgb(255, 255, 255);
+    font-size: var(--fontSizeS);
+    outline: none;
+}
+
+.search:focus {
+    border-color: rgba(255, 255, 255, 0.25);
+}
+
+.spacer {
+    flex: 1 1 0;
+}
+
+.count {
+    flex: 1 1 0;
+    display: flex;
+    flex-direction: row;
+    justify-content: flex-end;
+    white-space: pre;
+    font-size: var(--fontSizeS);
+    opacity: 0.6;
+}
+
+// Pick list: vanilla dropdown toggle + menu. The window has a definite width, so the absolute menu's
+// percentage sizing resolves (inside vanilla's shrink-to-fit popup it would not).
+.pick {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    margin: 2rem 12rem 2rem 0;
+}
+
+.pickLabel {
+    margin-right: 6rem;
+    font-size: var(--fontSizeS);
+    opacity: 0.7;
+}
+
+.pickBody {
+    position: relative;
+    width: 240rem;
+}
+
+.pickToggle {
+    width: 100%;
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    cursor: pointer;
+}
+
+.pickValue {
+    flex: 1 1 0;
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+}
+
+.pickMenu {
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: 100%;
+    margin-top: 2rem;
+    z-index: 10;
+}
+
+.pickScroll {
+    max-height: 320rem;
+}
+
+.pickItem {
+    padding: 6rem 10rem;
+    color: rgb(255, 255, 255);
+    font-size: var(--fontSizeS);
+    white-space: normal;
+    cursor: pointer;
+}
+
+.pickItem:hover {
+    background-color: rgba(255, 255, 255, 0.1);
+}
+
+.pickItemOn {
+    color: var(--accentColorNormal);
+}
+
+.catalogue {
+    height: 360rem;
+}
+
+.catalogueRow {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    padding: 3rem 4rem;
+    border-top: 1rem solid rgba(255, 255, 255, 0.08);
+    cursor: pointer;
+}
+
+.catalogueRow:hover {
+    background-color: rgba(255, 255, 255, 0.06);
+}
+
+.rowThumb {
+    width: 48rem;
+    height: 48rem;
+    flex-shrink: 0;
+    background-size: contain;
+    background-repeat: no-repeat;
+    background-position: center;
+}
+
+.rowName {
+    flex: 1 1 0;
+    margin-left: 8rem;
+    white-space: normal;
+    font-size: var(--fontSizeS);
+}
+
+.rowPack {
+    font-size: 0.85em;
+    opacity: 0.55;
+}
+
+.rowStats {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    margin-left: 8rem;
+    opacity: 0.7;
+    font-size: 0.85em;
+}
+
+.rowStat {
+    display: flex;
+    flex-direction: row;
+    align-items: baseline;
+    white-space: pre;
+}
+
+.add {
+    width: 20rem;
+    margin-left: 8rem;
+    text-align: center;
+    font-weight: bold;
+    opacity: 0;
+}
+
+.catalogueRow:hover .add {
+    opacity: 1;
+}
+
+.hint {
+    padding: 4rem 0;
+    white-space: normal;
+    font-size: var(--fontSizeS);
+    opacity: 0.6;
+}

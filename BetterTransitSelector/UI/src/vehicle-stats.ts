@@ -2,7 +2,7 @@ import { useMemo } from "react";
 import { useValue } from "cs2/api";
 
 import { useLocalization } from "cs2/l10n";
-import { ASSET_INFO, FAVOURITES, FAVOURITE_PACKS, LINE_SUMMARY, PACK_INFO, RECENT, STAT_OPTIONS, VEHICLE_STATS } from "./bindings";
+import { ASSET_INFO, CONSIST_BUILDER, FAVOURITES, FAVOURITE_PACKS, LINE_SUMMARY, PACK_INFO, RECENT, STAT_OPTIONS, VEHICLE_STATS } from "./bindings";
 
 export interface Entity {
     index: number;
@@ -57,6 +57,8 @@ export interface VehicleStats {
     collectionTitle: string;
 
     collectionIcon: string;
+
+    collectionLocaleId: string;
 }
 
 export interface VehicleFilters {
@@ -271,6 +273,86 @@ export const useFavouritePacks = (): Set<string> => {
 
 export const useRecent = (): string[] => useValue(RECENT.binding);
 
+// A car prefab's figures as the simulation reads them. Speed in km/h, acceleration and braking in m/s².
+export interface CarFigures {
+    passengers: number;
+    cargo: number;
+    maxSpeed: number;
+    acceleration: number;
+    braking: number;
+}
+
+export type CarStat = keyof CarFigures;
+
+export interface ConsistSlot {
+    prefab: Entity;
+    id: string;
+    reversed: boolean;
+
+    missing: boolean;
+
+    lead: boolean;
+
+    // For a custom car, its original asset's prefab name; "" for an asset's own car.
+    customOf: string;
+
+    kind: string;
+    length: number;
+    thumbnail: string;
+
+    figures: CarFigures;
+
+    // The original asset's figures; equal to `figures` unless this is a custom car.
+    baseFigures: CarFigures;
+}
+
+export interface ConsistCatalogueCar {
+    entity: Entity;
+    id: string;
+
+    kind: string;
+
+    length: number;
+    thumbnail: string;
+
+    pack: string;
+
+    author: string;
+
+    figures: CarFigures;
+}
+
+// Custom cars are prefabs named "<original>#BTS:<hash>" (CustomCar.kSeparator on the C# side).
+const CUSTOM_SEPARATOR = "#BTS:";
+
+/** The original asset's prefab name when `prefabName` is a custom car's, else null. */
+export const customOriginalOf = (prefabName: string): string | null => {
+    const at = prefabName.indexOf(CUSTOM_SEPARATOR);
+    return at > 0 ? prefabName.slice(0, at) : null;
+};
+
+export interface ConsistBuilder {
+    valid: boolean;
+
+    lineName: string;
+
+    status: string;
+
+    // Running trains that differ from the built train; a rolling refit replaces them one at a time.
+    mismatched: number;
+    refitting: boolean;
+    fixPrimary: Entity;
+    fixSecondary: Entity;
+    cars: ConsistSlot[];
+
+    related: Entity[];
+
+    models: Entity[];
+    catalogue: ConsistCatalogueCar[];
+}
+
+export const useConsistBuilder = (): ConsistBuilder => useValue(CONSIST_BUILDER.binding);
+
 export interface VehiclePrefab {
     entity: Entity;
 
@@ -304,10 +386,8 @@ export const useVehicleStats = (): StatsLookup => {
 };
 
 export const useVehicleName = (): ((vehicle: VehiclePrefab) => string) => {
-    const { translate } = useLocalization();
-
-    return (vehicle: VehiclePrefab) =>
-        translate(`Assets.NAME[${vehicle.id}]`, vehicle.id) ?? vehicle.id;
+    const { nameOf } = useAssetText();
+    return (vehicle: VehiclePrefab) => nameOf(vehicle.id);
 };
 
 export const useT = (): ((key: string, fallback: string, vars?: Record<string, string | number>) => string) => {
@@ -327,13 +407,25 @@ export const useT = (): ((key: string, fallback: string, vars?: Record<string, s
 export const useAssetText = (): {
     nameOf: (prefabName: string) => string;
     descriptionOf: (prefabName: string) => string | null;
+    headingOf: (title: string, localeId: string) => string;
 } => {
     const { translate } = useLocalization();
     const some = (v: string | null | undefined) => (v && v.length > 0 ? v : null);
+    const assetName = (prefabName: string) => translate(`Assets.NAME[${prefabName}]`, prefabName) ?? prefabName;
+    const custom = translate("BetterTransitSelector.UI[Consist.CustomSuffix]", "custom") ?? "custom";
 
     return {
-        nameOf: (prefabName) => translate(`Assets.NAME[${prefabName}]`, prefabName) ?? prefabName,
+        // A custom car has no translation of its own: it goes by its asset's name, marked as custom.
+        nameOf: (prefabName) => {
+            const original = customOriginalOf(prefabName);
+            return original ? `${assetName(original)} (${custom})` : assetName(prefabName);
+        },
         descriptionOf: (prefabName) => some(translate(`Assets.DESCRIPTION[${prefabName}]`, null)),
+        // A display name is typed text, so a translation is usually keyed by the parent pack's prefab name.
+        headingOf: (title, localeId) =>
+            some(translate(`Assets.NAME[${title}]`, null)) ??
+            (localeId ? some(translate(`Assets.NAME[${localeId}]`, null)) : null) ??
+            title,
     };
 };
 

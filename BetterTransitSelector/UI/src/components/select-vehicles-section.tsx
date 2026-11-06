@@ -1,10 +1,11 @@
 import { trigger } from "cs2/api";
 import { useLocalization } from "cs2/l10n";
 import { VC } from "vanilla/Components";
-import { useVehicleName, useVehicleStats, type VehiclePrefab } from "../vehicle-stats";
+import { customOriginalOf, useVehicleName, useVehicleStats, type VehiclePrefab } from "../vehicle-stats";
 import { recordUsed } from "../bindings";
 import { VehicleDropdown } from "./vehicle-dropdown";
 import { LineSummaryRow } from "./line-summary";
+import { ConsistBuilderRow } from "./consist-builder";
 
 const VANILLA_GROUP = "SelectVehiclesSection";
 const SELECT = "selectVehicles";
@@ -36,6 +37,15 @@ export const SelectVehiclesSection = (props: SelectVehiclesSectionProps) => {
         availableSecondaryVehicles,
     } = props;
 
+    // Custom cars (players' copies of a car with changed figures) are made and placed in the train builder.
+    // They are hidden here unless selected, so a selection is never invisible.
+    const visible = (available: VehiclePrefab[], selected: VehiclePrefab[] | null) =>
+        available.filter(
+            (v) => customOriginalOf(v.id) === null || (selected ?? []).some((s) => s.id === v.id),
+        );
+    const availablePrimary = visible(availablePrimaryVehicles, selectedPrimaryVehicles);
+    const availableSecondary = availableSecondaryVehicles && visible(availableSecondaryVehicles, selectedSecondaryVehicles);
+
     const stats = useVehicleStats();
     const nameOf = useVehicleName();
     const { translate } = useLocalization();
@@ -59,7 +69,7 @@ export const SelectVehiclesSection = (props: SelectVehiclesSectionProps) => {
         <VC.InfoSection disableFocus={true}>
             <VehicleDropdown
                 label={label(LABEL_PRIMARY, "Select vehicle model")}
-                available={availablePrimaryVehicles}
+                available={availablePrimary}
                 selected={selectedPrimaryVehicles}
                 isPrimary={true}
                 showSecondary={showSecondary}
@@ -71,7 +81,7 @@ export const SelectVehiclesSection = (props: SelectVehiclesSectionProps) => {
             {showSecondary && availableSecondaryVehicles && selectedSecondaryVehicles && (
                 <VehicleDropdown
                     label={label(LABEL_SECONDARY, "Select carriage model")}
-                    available={availableSecondaryVehicles}
+                    available={availableSecondary ?? []}
                     selected={selectedSecondaryVehicles}
                     isPrimary={false}
                     showSecondary={showSecondary}
@@ -82,6 +92,9 @@ export const SelectVehiclesSection = (props: SelectVehiclesSectionProps) => {
             )}
 
             <LineSummaryRow selected={selectedPrimaryVehicles} stats={stats} />
+
+            {/* Rail lines only: vanilla sends the secondary lists as null for every other type. */}
+            {availableSecondaryVehicles && <ConsistBuilderRow />}
         </VC.InfoSection>
     );
 };

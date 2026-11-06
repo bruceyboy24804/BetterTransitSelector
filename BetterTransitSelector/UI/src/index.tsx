@@ -26,6 +26,11 @@ const register: ModRegistrar = (moduleRegistry) => {
 
             { path: "game-ui/common/input/button/themes/round-highlight-button.module.scss", name: "roundHighlightButton" },
             { path: "game-ui/common/panel/panel.module.scss", name: "panel" },
+            // The colour reset button's look (its action-button), reused by the train builder's car card.
+            {
+                path: "game-ui/game/components/selected-info-panel/selected-info-sections/visual-customize-section/visual-customize-section.module.scss",
+                name: "visualCustomize",
+            },
         ],
     );
 

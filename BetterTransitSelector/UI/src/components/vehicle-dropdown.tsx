@@ -145,7 +145,7 @@ export const VehicleDropdown = ({
     const folderTitle = (folder: string, members: VehiclePrefab[]) => {
         const s = stats(members[0]);
         return isCollection(folder)
-            ? (s?.collectionTitle ? assetText.nameOf(s.collectionTitle) : folder)
+            ? (s?.collectionTitle ? assetText.headingOf(s.collectionTitle, s.collectionLocaleId) : folder)
             : groupName(folder, s?.groupTitle ?? "", nameOf(members[0]));
     };
     const folderIcon = (folder: string, members: VehiclePrefab[]) => {

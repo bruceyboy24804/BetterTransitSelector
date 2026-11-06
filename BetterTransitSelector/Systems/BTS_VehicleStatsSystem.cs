@@ -217,7 +217,7 @@ namespace BetterTransitSelector.Systems {
                     GetConsistLength(entity), GetPackageDate(entity), GetTheme(entity), GetAuthor(entity),
                     GetCountries(entity), GetRowIcon(entity),
                     variant.Collection ?? string.Empty, variant.CollectionTitle ?? string.Empty, variant.CollectionIcon ?? string.Empty,
-                    GetUnitCount(entity)));
+                    GetUnitCount(entity), variant.CollectionLocaleId ?? string.Empty));
             }
 
             entities.Dispose();
@@ -404,7 +404,8 @@ namespace BetterTransitSelector.Systems {
             return info;
         }
 
-        private string GetPackageName(Entity prefab) {
+        /// <summary>The published title of the upload <paramref name="prefab"/> came in; empty for vanilla assets.</summary>
+        internal string GetPackageName(Entity prefab) {
             if (!EntityManager.TryGetComponent(prefab, out PrefabData prefabData)
                 || !m_PrefabSystem.TryGetPrefab(prefabData, out PrefabBase prefabBase)
                 || prefabBase.asset == null) {
@@ -577,9 +578,11 @@ namespace BetterTransitSelector.Systems {
             public readonly string Collection;
             public readonly string CollectionTitle;
             public readonly string CollectionIcon;
+            public readonly string CollectionLocaleId;
 
             public Variant(string key, string title, string icon, int index,
-                           string collection, string collectionTitle, string collectionIcon) {
+                           string collection, string collectionTitle, string collectionIcon, string collectionLocaleId) {
+                CollectionLocaleId = collectionLocaleId;
                 Key             = key;
                 Title           = title;
                 Icon            = icon;
@@ -720,7 +723,11 @@ namespace BetterTransitSelector.Systems {
                 var collection      = string.Empty;
                 var collectionTitle = string.Empty;
                 var collectionIcon  = string.Empty;
+                var collectionLocaleId = string.Empty;
                 if (root != data.m_Placeholder) {
+                    // Only a parent pack's name can translate a heading. A pack that merely types a shared
+                    // display name is one of many in that folder, and its own name would mislabel the rest.
+                    collectionLocaleId = m_PrefabSystem.GetPrefabName(root) ?? string.Empty;
                     var rootPack  = GetPack(root);
                     var rootName  = !string.IsNullOrEmpty(rootPack?.m_DisplayName) ? rootPack.m_DisplayName : m_PrefabSystem.GetPrefabName(root) ?? string.Empty;
                     collection    = rootPack != null && rootPack.m_Exclusive
@@ -740,7 +747,7 @@ namespace BetterTransitSelector.Systems {
                 }
 
                 result[vehicle] = new Variant(key, title, GetIcon(data.m_Placeholder), data.m_Index,
-                                              collection, collectionTitle, collectionIcon);
+                                              collection, collectionTitle, collectionIcon, collectionLocaleId);
             }
 
             vehicles.Dispose();
@@ -761,7 +768,7 @@ namespace BetterTransitSelector.Systems {
             System.Text.RegularExpressions.Regex.Replace((name ?? string.Empty).Trim(), @"\s+", " ").ToLowerInvariant();
 
         private void CanonicaliseHeadings(Dictionary<Entity, Variant> variants) {
-            var oldest = new Dictionary<string, (string date, string title)>();
+            var oldest = new Dictionary<string, (string date, string title, string localeId)>();
             var icons  = new Dictionary<string, (string date, string icon)>();
 
             foreach (var pair in variants) {
@@ -776,7 +783,7 @@ namespace BetterTransitSelector.Systems {
                 }
 
                 if (!oldest.TryGetValue(v.Collection, out var t) || string.CompareOrdinal(date, t.date) < 0) {
-                    oldest[v.Collection] = (date, v.CollectionTitle);
+                    oldest[v.Collection] = (date, v.CollectionTitle, v.CollectionLocaleId);
                 }
                 if (v.CollectionIcon.Length > 0
                     && (!icons.TryGetValue(v.Collection, out var ic) || string.CompareOrdinal(date, ic.date) < 0)) {
@@ -788,7 +795,7 @@ namespace BetterTransitSelector.Systems {
                 var v = variants[key];
                 if (!string.IsNullOrEmpty(v.Collection) && oldest.TryGetValue(v.Collection, out var canon)) {
                     icons.TryGetValue(v.Collection, out var icon);
-                    variants[key] = new Variant(v.Key, v.Title, v.Icon, v.Index, v.Collection, canon.title, icon.icon ?? string.Empty);
+                    variants[key] = new Variant(v.Key, v.Title, v.Icon, v.Index, v.Collection, canon.title, icon.icon ?? string.Empty, canon.localeId);
                 }
             }
         }
@@ -922,7 +929,8 @@ namespace BetterTransitSelector.Systems {
             return string.Empty;
         }
 
-        private string GetAuthor(Entity prefab) {
+        /// <summary>The upload author of <paramref name="prefab"/>; empty for vanilla assets.</summary>
+        internal string GetAuthor(Entity prefab) {
             if (!EntityManager.TryGetComponent(prefab, out PrefabData prefabData)
                 || !m_PrefabSystem.TryGetPrefab(prefabData, out PrefabBase prefabBase)
                 || prefabBase.asset == null) {

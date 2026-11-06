@@ -44,6 +44,20 @@
         </Reference>
     </ItemGroup>
 
+    <!-- The train builder's 3D preview: its own camera, lights and HDRP volume (Core.Runtime), the volume's
+         bounds (PhysicsModule), and the Gameface image it is shown through (cohtml.Net). -->
+    <ItemGroup>
+        <Reference Include="Unity.RenderPipelines.Core.Runtime">
+            <Private>false</Private>
+        </Reference>
+        <Reference Include="UnityEngine.PhysicsModule">
+            <Private>false</Private>
+        </Reference>
+        <Reference Include="cohtml.Net">
+            <Private>false</Private>
+        </Reference>
+    </ItemGroup>
+
     <!-- Localisation, Node Controller's layout: Locale.json holds every English string (settings
          and UI), Locale\<locale>.json the translations. LocaleHelper finds the siblings by the
          resource-name prefix "BetterTransitSelector.Locale." and takes the locale id from the

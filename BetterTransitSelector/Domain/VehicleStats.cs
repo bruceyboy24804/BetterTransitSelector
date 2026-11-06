@@ -56,12 +56,18 @@ namespace BetterTransitSelector.Domain {
 
         public string CollectionIcon { get; }
 
+        /// <summary>
+        /// Prefab name of the parent pack heading this folder, or empty. The typed display name has no
+        /// translations of its own, and creators' localisation is keyed by prefab name.
+        /// </summary>
+        public string CollectionLocaleId { get; }
+
         public VehicleStats(
             Entity entity, int maxSpeed, int passengers, string group, string groupTitle,
             string family, string familyTitle, string familyIcon, string groupIcon, int index,
             float acceleration, float braking, string energyType, int carriages, int length,
             string packageDate, string theme, string author, string countries, string icon,
-            string collection = "", string collectionTitle = "", string collectionIcon = "", int units = 1) {
+            string collection = "", string collectionTitle = "", string collectionIcon = "", int units = 1, string collectionLocaleId = "") {
             Entity       = entity;
             MaxSpeed     = maxSpeed;
             Passengers   = passengers;
@@ -85,6 +91,7 @@ namespace BetterTransitSelector.Domain {
             Collection      = collection;
             CollectionTitle = collectionTitle;
             CollectionIcon  = collectionIcon;
+            CollectionLocaleId = collectionLocaleId;
             Units           = units;
         }
 
@@ -138,6 +145,8 @@ namespace BetterTransitSelector.Domain {
             writer.Write(CollectionTitle ?? string.Empty);
             writer.PropertyName("collectionIcon");
             writer.Write(CollectionIcon ?? string.Empty);
+            writer.PropertyName("collectionLocaleId");
+            writer.Write(CollectionLocaleId ?? string.Empty);
             writer.TypeEnd();
         }
     }

@@ -1,0 +1,165 @@
+// Gameface: a var() inside a shorthand drops the declaration, so borders using tokens are written as longhands.
+
+// The render texture is 1024x400; the box keeps that aspect at the window's width.
+.preview {
+    position: relative;
+    height: 285rem;
+    margin: 4rem 0 6rem 0;
+    background-color: rgba(13, 14, 17, 1);
+    border-radius: 4rem;
+    overflow: hidden;
+    cursor: move;
+}
+
+.image {
+    position: absolute;
+    left: 0;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    background-size: contain;
+    background-repeat: no-repeat;
+    background-position: center;
+    pointer-events: none;
+}
+
+// A car's zone is always invisible: hover and selection are drawn by the game on the car models themselves
+// (BTS_ConsistPreviewSystem.Highlight). Only a missing asset, which has no model, is outlined.
+.car {
+    position: absolute;
+    cursor: pointer;
+}
+
+.carHover {
+}
+
+.carOn {
+}
+
+.carMissing {
+    border-width: 2rem;
+    border-style: dashed;
+    border-color: rgba(255, 90, 90, 0.7);
+    border-radius: 3rem;
+}
+
+// The selection also shows in the badges, so it reads even where a tint is hard to see (dark liveries).
+.carOn .badge {
+    background-color: var(--accentColorNormal);
+}
+
+.badge {
+    position: absolute;
+    left: 4rem;
+    top: -18rem;
+    padding: 1rem 5rem;
+    font-size: 11rem;
+    color: rgb(255, 255, 255);
+    background-color: rgba(0, 0, 0, 0.55);
+    border-radius: 3rem;
+    white-space: nowrap;
+}
+
+// The car that leads the train (the one the depot's model selection is checked against). Outlined, since the
+// accent fill means "selected".
+.badgeLead {
+    border-width: 1rem;
+    border-style: solid;
+    border-color: rgba(255, 255, 255, 0.85);
+}
+
+.label {
+    position: absolute;
+    left: 0;
+    bottom: -22rem;
+    padding: 2rem 6rem;
+    font-size: 12rem;
+    color: rgb(255, 255, 255);
+    background-color: rgba(0, 0, 0, 0.7);
+    border-radius: 3rem;
+    white-space: nowrap;
+    pointer-events: none;
+}
+
+// A coupling handle, centred on its projected point.
+.coupling {
+    position: absolute;
+    width: 10rem;
+    height: 34rem;
+    margin-left: -5rem;
+    margin-top: -17rem;
+    cursor: pointer;
+    border-radius: 3rem;
+    background-color: rgba(255, 255, 255, 0.12);
+}
+
+.coupling:hover {
+    background-color: rgba(255, 255, 255, 0.4);
+}
+
+// While a car is carried by hand the train itself shows where it will go; the handles would only clutter it.
+.couplingHidden {
+    opacity: 0;
+    pointer-events: none;
+}
+
+.couplingOn {
+    background-color: var(--accentColorNormal);
+}
+
+.couplingDrop {
+    width: 6rem;
+    margin-left: -3rem;
+    height: 60rem;
+    margin-top: -30rem;
+    background-color: rgb(255, 255, 255);
+}
+
+// The selected cars' figures, floating on them. Centred on its left position; clicks stay inside it.
+.card {
+    position: absolute;
+    width: 270rem;
+    margin-left: -135rem;
+    color: rgb(255, 255, 255);
+    background-color: rgba(20, 22, 27, 0.92);
+    border-width: 1rem;
+    border-style: solid;
+    border-color: rgba(255, 255, 255, 0.12);
+    border-radius: 5rem;
+    cursor: default;
+}
+
+.cardAbove {
+    margin-bottom: 24rem;
+}
+
+.cardBelow {
+    margin-top: 8rem;
+}
+
+// No room above or below the cars: docked at the top of the view.
+.cardTop {
+    top: 6rem;
+}
+
+.emptyDrop {
+    position: absolute;
+    left: 10%;
+    right: 10%;
+    top: 30%;
+    bottom: 30%;
+    border-width: 2rem;
+    border-style: dashed;
+    border-color: rgba(255, 255, 255, 0.4);
+    border-radius: 4rem;
+}
+
+.hint {
+    position: absolute;
+    right: 8rem;
+    bottom: 6rem;
+    font-size: 11rem;
+    color: rgb(255, 255, 255);
+    opacity: 0.45;
+    pointer-events: none;
+}
