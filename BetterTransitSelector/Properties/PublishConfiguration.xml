@@ -83,7 +83,7 @@ The mod replaces only the picker's UI. Selection is still written through the ga
 	<!--Link to the forum post where the mod can be discussed-->
 	<ForumLink Value="" />
 	<!--Version of the mod-->
-	<ModVersion Value="0.15" />
+	<ModVersion Value="0.17" />
 	<!--Recommended version of the base game to use the mod-->
 	<GameVersion Value="1.6.2*" />
 	<!--Dependency for the mod, can be set multiple times-->
@@ -92,9 +92,8 @@ The mod replaces only the picker's UI. Selection is still written through the ga
 	<!--Required DLC, can be set multiple times. Supported values are "Landmark Buildings", "San Fransisco Set", "Beach Properties", "Urban Promenades", "Modern Architecture"-->
 	<RequiredDLC Value="" />
 	<!--Change log for new version. Single line or multi line. Supports minimal markdown subset-->
-	<ChangeLog>## v0.15
-- revert a change 
-
+	<ChangeLog>## v0.17
+- minor new improvements
 	</ChangeLog>
 	<!--External link, can be set multiple times. supported types are "discord", "github", "youtube", "twitch", "x", "paypal", "patreon", "buymeacoffee", "kofi", "crowdin", "gitlab", "gofundme"-->
 	<!--Supported values Public, Private, Unlisted-->
