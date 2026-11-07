@@ -343,6 +343,7 @@ export interface ConsistConfigRow {
     maxSpeed: number;
     missing: boolean;
     canLead: boolean;
+    noEngine: boolean;
     selected: boolean;
 }
 

@@ -135,6 +135,9 @@ namespace BetterTransitSelector.Domain {
         public bool   Missing;
         public bool   CanLead;
 
+        /// <summary>The line needs a locomotive and this train has none, so it cannot be picked.</summary>
+        public bool   NoEngine;
+
         /// <summary>The line's train is this train, car for car.</summary>
         public bool   Selected;
 
@@ -151,6 +154,7 @@ namespace BetterTransitSelector.Domain {
             writer.PropertyName("maxSpeed");   writer.Write(MaxSpeed);
             writer.PropertyName("missing");    writer.Write(Missing);
             writer.PropertyName("canLead");    writer.Write(CanLead);
+            writer.PropertyName("noEngine");   writer.Write(NoEngine);
             writer.PropertyName("selected");   writer.Write(Selected);
             writer.TypeEnd();
         }

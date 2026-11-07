@@ -108,9 +108,16 @@ namespace BetterTransitSelector.Domain {
                 }
 
                 foreach (var config in file.Configs) {
-                    if (!string.IsNullOrEmpty(config?.Id) && config.Cars != null && config.Cars.Count > 0) {
-                        m_Configs.Add(config);
+                    if (string.IsNullOrEmpty(config?.Id) || config.Cars == null || config.Cars.Count == 0
+                        || config.Cars.Exists(car => string.IsNullOrEmpty(car?.Prefab))) {
+                        // Dropped entries would be lost on the next save, so that save backs the file up first.
+                        m_Unreadable = true;
+                        m_Log.Warn($"Load() -- skipped an invalid train in {m_Path}.");
+                        continue;
                     }
+
+                    config.Name ??= "Train";
+                    m_Configs.Add(config);
                 }
             } catch (Exception e) {
                 m_Unreadable = true;

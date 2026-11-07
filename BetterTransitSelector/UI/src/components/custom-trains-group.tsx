@@ -78,8 +78,11 @@ export const CustomTrainsGroup = ({ query, selectedPrimary, selectedSecondary }:
                         />
                     )}
                     {rows.map((row) => {
-                        const cantLead = row.canLead ? null : t("Consist.CantLead", "No car can lead this train");
-                        const reason = row.missing ? t("Consist.Missing", "Missing asset") : cantLead;
+                        const reason =
+                            (row.missing && t("Consist.Missing", "Missing asset")) ||
+                            (!row.canLead && t("Consist.CantLead", "No car can lead this train")) ||
+                            (row.noEngine && t("Consist.NoEngine", "A locomotive-hauled train needs an engine.")) ||
+                            null;
                         return (
                             <div key={row.id} className={c(rowStyles.row, reason ? styles.disabled : "")}>
                                 <VC.Checkbox

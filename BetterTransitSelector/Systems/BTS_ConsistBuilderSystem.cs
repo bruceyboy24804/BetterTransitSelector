@@ -244,8 +244,9 @@ namespace BetterTransitSelector.Systems {
 
             var signature = Signature(line);
             if (signature != m_Signature) {
-                m_Signature      = signature;
                 m_Builder.Value = line == Entity.Null ? ConsistBuilder.Empty : Build(line, track, lineData);
+                // Only after a successful build, so a failed one is not mistaken for up to date.
+                m_Signature = signature;
             }
 
             base.OnUpdate();
@@ -398,6 +399,8 @@ namespace BetterTransitSelector.Systems {
                         }
 
                         row.Engine = accepted ? Entity.Null : engine;
+                        // Vanilla retires a locomotive-hauled train with none of the line's selected locomotives.
+                        row.NoEngine = !accepted && engine == Entity.Null;
                     }
                 }
 

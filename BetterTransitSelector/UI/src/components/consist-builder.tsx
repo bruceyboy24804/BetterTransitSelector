@@ -617,14 +617,18 @@ const ConsistBuilderWindow = ({ onClose }: { onClose: () => void }) => {
                         value={name}
                         placeholder={t("Consist.Config.Name", "Train name")}
                         onChange={(e) => setName(e.target.value)}
-                        onBlur={() => {
-                            if (builder.editingId && name.trim() !== "" && name !== builder.editingName) {
-                                consistConfigRename(builder.editingId, name);
-                            }
-                        }}
                     />
                     {builder.editingId !== "" &&
-                        textButton(t("Consist.Config.Save", "Save"), () => consistConfigSave(), { disabled: !canSave })}
+                        textButton(
+                            t("Consist.Config.Save", "Save"),
+                            () => {
+                                if (name.trim() !== "" && name !== builder.editingName) {
+                                    consistConfigRename(builder.editingId, name);
+                                }
+                                consistConfigSave();
+                            },
+                            { disabled: !canSave },
+                        )}
                     {textButton(t("Consist.Config.SaveNew", "Save as new"), () => consistConfigSaveNew(name), { disabled: !canSave })}
                     {builder.editingId !== "" &&
                         textButton(t("Consist.Config.Delete", "Delete"), () => consistConfigDelete(builder.editingId))}
