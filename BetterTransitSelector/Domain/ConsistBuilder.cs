@@ -22,11 +22,23 @@ namespace BetterTransitSelector.Domain {
         /// <summary>The line's display name, as the game renders it on labels.</summary>
         public string LineName = string.Empty;
 
-        /// <summary>
-        /// One of <c>Vanilla</c>, <c>Ok</c>, <c>NoLead</c>, <c>NeedsPrimary</c>, <c>NeedsSecondary</c>,
-        /// <c>NoEngine</c>. The UI turns it into text and, for the two <c>Needs*</c> codes, a fix button.
-        /// </summary>
+        /// <summary>The draft's state: <c>Vanilla</c> (empty), <c>Ok</c>, <c>NoLead</c> or <c>NoEngine</c>.</summary>
         public string Status = "Vanilla";
+
+        /// <summary>The saved train the draft was opened from, or empty for a new one.</summary>
+        public string EditingId = string.Empty;
+
+        /// <summary>That saved train's name.</summary>
+        public string EditingName = string.Empty;
+
+        /// <summary>What the line runs: <c>Default</c>, <c>Config</c> (a saved train) or <c>Modified</c> (no saved train matches).</summary>
+        public string LineState = "Default";
+
+        /// <summary>The line has lead models selected that its train does not contain.</summary>
+        public bool OtherModels;
+
+        /// <summary>Saved trains this line can run.</summary>
+        public readonly List<ConsistConfigRow> Configs = new List<ConsistConfigRow>();
 
         /// <summary>Running trains that differ from the built train and are not already leaving the line.</summary>
         public int Mismatched;
@@ -34,13 +46,7 @@ namespace BetterTransitSelector.Domain {
         /// <summary>A rolling refit is replacing them one at a time.</summary>
         public bool Refitting;
 
-        /// <summary>The car to select as a primary model to fix <c>NeedsPrimary</c>.</summary>
-        public Entity FixPrimary;
-
-        /// <summary>The car to select as a secondary model to fix <c>NeedsSecondary</c>.</summary>
-        public Entity FixSecondary;
-
-        /// <summary>The built train, front first.</summary>
+        /// <summary>The draft being edited, front first; not the line's train.</summary>
         public readonly List<ConsistSlot> Cars = new List<ConsistSlot>();
 
         /// <summary>Every car that can run on the line.</summary>
@@ -62,8 +68,17 @@ namespace BetterTransitSelector.Domain {
             writer.PropertyName("status");       writer.Write(Status);
             writer.PropertyName("mismatched");   writer.Write(Mismatched);
             writer.PropertyName("refitting");    writer.Write(Refitting);
-            writer.PropertyName("fixPrimary");   writer.Write(FixPrimary);
-            writer.PropertyName("fixSecondary"); writer.Write(FixSecondary);
+            writer.PropertyName("editingId");    writer.Write(EditingId);
+            writer.PropertyName("editingName");  writer.Write(EditingName);
+            writer.PropertyName("lineState");    writer.Write(LineState);
+            writer.PropertyName("otherModels");  writer.Write(OtherModels);
+
+            writer.PropertyName("configs");
+            writer.ArrayBegin(Configs.Count);
+            foreach (var config in Configs) {
+                config.Write(writer);
+            }
+            writer.ArrayEnd();
 
             writer.PropertyName("cars");
             writer.ArrayBegin(Cars.Count);
@@ -97,7 +112,50 @@ namespace BetterTransitSelector.Domain {
         }
     }
 
-    /// <summary>One car of the built train.</summary>
+    /// <summary>A saved train as a row in the vehicle dropdown.</summary>
+    public sealed class ConsistConfigRow {
+        public string Id;
+        public string Name;
+
+        /// <summary>The lead model the line must select to keep this train; null if none can lead.</summary>
+        public Entity Lead;
+
+        /// <summary>The engine model the line must select, or null when it needs none.</summary>
+        public Entity Engine;
+
+        public string Thumbnail;
+        public int    Cars;
+        public int    Passengers;
+        public int    Cargo;
+
+        /// <summary>km/h: the lowest of the cars', which is what the train runs at.</summary>
+        public float  MaxSpeed;
+
+        /// <summary>A car's asset is not installed, so the train cannot be picked.</summary>
+        public bool   Missing;
+        public bool   CanLead;
+
+        /// <summary>The line's train is this train, car for car.</summary>
+        public bool   Selected;
+
+        public void Write(IJsonWriter writer) {
+            writer.TypeBegin("BetterTransitSelector.ConsistConfigRow");
+            writer.PropertyName("id");         writer.Write(Id);
+            writer.PropertyName("name");       writer.Write(Name);
+            writer.PropertyName("lead");       writer.Write(Lead);
+            writer.PropertyName("engine");     writer.Write(Engine);
+            writer.PropertyName("thumbnail");  writer.Write(Thumbnail);
+            writer.PropertyName("cars");       writer.Write(Cars);
+            writer.PropertyName("passengers"); writer.Write(Passengers);
+            writer.PropertyName("cargo");      writer.Write(Cargo);
+            writer.PropertyName("maxSpeed");   writer.Write(MaxSpeed);
+            writer.PropertyName("missing");    writer.Write(Missing);
+            writer.PropertyName("canLead");    writer.Write(CanLead);
+            writer.PropertyName("selected");   writer.Write(Selected);
+            writer.TypeEnd();
+        }
+    }
+
     /// <summary>
     /// A car prefab's figures as the simulation reads them: capacity from its transport data, and top speed
     /// (sent in km/h, the unit the UI edits in), acceleration and braking (m/s²) from its <see cref="TrainData"/>.
