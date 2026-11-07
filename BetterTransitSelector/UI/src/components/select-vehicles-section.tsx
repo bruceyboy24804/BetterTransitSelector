@@ -6,6 +6,7 @@ import { recordUsed } from "../bindings";
 import { VehicleDropdown } from "./vehicle-dropdown";
 import { LineSummaryRow } from "./line-summary";
 import { ConsistBuilderRow } from "./consist-builder";
+import { CustomTrainsGroup } from "./custom-trains-group";
 
 const VANILLA_GROUP = "SelectVehiclesSection";
 const SELECT = "selectVehicles";
@@ -76,6 +77,18 @@ export const SelectVehiclesSection = (props: SelectVehiclesSectionProps) => {
                 stats={stats}
                 nameOf={nameOf}
                 onToggle={toggle(true)}
+                forceSearch={availableSecondaryVehicles !== null}
+                renderHeader={
+                    availableSecondaryVehicles
+                        ? (query) => (
+                              <CustomTrainsGroup
+                                  query={query}
+                                  selectedPrimary={selectedPrimaryVehicles}
+                                  selectedSecondary={selectedSecondaryVehicles}
+                              />
+                          )
+                        : undefined
+                }
             />
 
             {showSecondary && availableSecondaryVehicles && selectedSecondaryVehicles && (

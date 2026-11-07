@@ -43,6 +43,10 @@ export interface ConsistStageProps {
     blockFor: (i: number) => { start: number; count: number };
     /** Moves a block so it starts at `to` (a position with the block lifted out), as consistMove does. */
     onMoveBlock: (start: number, count: number, to: number) => void;
+    /** A car drag moved to this screen position. */
+    onCarDrag: (block: { start: number; count: number }, x: number, y: number) => void;
+    /** A car drag ended here. Returns true if the drop was used, and the train then stays as it is. */
+    onCarDrop: (block: { start: number; count: number }, x: number, y: number) => boolean;
 
     hint: string;
 }
@@ -88,6 +92,7 @@ export const ConsistStage = (props: ConsistStageProps) => {
                     p.block = latest.current.props.blockFor(p.i);
                     setCarDragging(true);
                 }
+                latest.current.props.onCarDrag(p.block, e.clientX, e.clientY);
                 const box = stage.current?.getBoundingClientRect();
                 if (box) {
                     consistPreviewDrag(
@@ -112,7 +117,7 @@ export const ConsistStage = (props: ConsistStageProps) => {
                 consistPreviewPan(dx / Math.max(1, width));
             }
         };
-        const up = () => {
+        const up = (e: MouseEvent) => {
             view.current = null;
             const p = press.current;
             press.current = null;
@@ -122,7 +127,8 @@ export const ConsistStage = (props: ConsistStageProps) => {
             suppressClick.current = true;
             setCarDragging(false);
             const to = latest.current.dropGap3D;
-            if (to >= 0 && to !== p.block.start) latest.current.props.onMoveBlock(p.block.start, p.block.count, to);
+            const used = latest.current.props.onCarDrop(p.block, e.clientX, e.clientY);
+            if (!used && to >= 0 && to !== p.block.start) latest.current.props.onMoveBlock(p.block.start, p.block.count, to);
             consistPreviewDragEnd();
         };
         document.addEventListener("mousemove", move);
@@ -192,6 +198,8 @@ export const ConsistStage = (props: ConsistStageProps) => {
                             style={{ left: pct(r.x0), top: pct(r.y0), width: pct(r.x1 - r.x0), height: pct(r.y1 - r.y0) }}
                             onMouseDown={(e) => {
                                 e.stopPropagation();
+                                // A drag released off the cars leaves this set with no click to clear it.
+                                suppressClick.current = false;
                                 if (e.button === 0 && !e.shiftKey) press.current = { i, x: e.clientX, y: e.clientY, block: null };
                             }}
                             onClick={(e) => {

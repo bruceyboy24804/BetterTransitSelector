@@ -74,8 +74,11 @@ namespace BetterTransitSelector.Systems {
             m_PrefabSystem  = World.GetOrCreateSystemManaged<PrefabSystem>();
             m_PackageTitles = LoadPackageTitles();
 
+            // Same vehicles as vanilla's TransportVehicleSelectData. Cargo cars and engines have no
+            // PublicTransportVehicleData; a car missing here gets no group and shows as a loose row.
             m_VehiclePrefabQuery = SystemAPI.QueryBuilder()
-                                            .WithAll<PublicTransportVehicleData, PrefabData>()
+                                            .WithAll<VehicleData, ObjectData, PrefabData>()
+                                            .WithAny<PublicTransportVehicleData, CargoTransportVehicleData, TrainEngineData, TaxiData>()
                                             .Build();
 
             m_PackagedPrefabQuery = SystemAPI.QueryBuilder()

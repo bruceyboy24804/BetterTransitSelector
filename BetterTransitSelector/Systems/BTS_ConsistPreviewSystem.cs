@@ -72,6 +72,8 @@ namespace BetterTransitSelector.Systems {
         private PrefabSystem           m_PrefabSystem;
         private TextureStreamingSystem m_Streaming;
 
+        private BTS_ConsistBuilderSystem m_Builder;
+
         private ValueBindingHelper<string> m_Url;
 
         private bool m_Visible;
@@ -216,6 +218,7 @@ namespace BetterTransitSelector.Systems {
         protected override void OnCreate() {
             base.OnCreate();
             m_SelectedInfo = World.GetOrCreateSystemManaged<SelectedInfoUISystem>();
+            m_Builder      = World.GetOrCreateSystemManaged<BTS_ConsistBuilderSystem>();
             m_PrefabSystem = World.GetOrCreateSystemManaged<PrefabSystem>();
             m_Streaming    = World.GetOrCreateSystemManaged<TextureStreamingSystem>();
 
@@ -306,7 +309,9 @@ namespace BetterTransitSelector.Systems {
                 return;
             }
 
-            var line = SelectedLine(out var cars);
+            var line = SelectedLine();
+            // The builder's draft, not the line's train: the preview shows what is being edited.
+            var cars = m_Builder.DraftCars;
             m_LineColor = EntityManager.TryGetComponent(line, out global::Game.Routes.Color lineColor) ? (Color)lineColor.m_Color : null;
             var signature = unchecked(Signature(line, cars) * 31 + (m_LineColor?.GetHashCode() ?? 0));
             if (signature != m_Signature || m_Root == null) {
@@ -478,25 +483,17 @@ namespace BetterTransitSelector.Systems {
 
         #region Train
 
-        private Entity SelectedLine(out DynamicBuffer<BTS_ConsistCar> cars) {
-            cars = default;
+        private Entity SelectedLine() {
             var line = m_SelectedInfo.selectedEntity;
             var em   = EntityManager;
-            if (line == Entity.Null || !em.Exists(line) || !em.HasComponent<TransportLine>(line)) {
-                return Entity.Null;
-            }
-
-            em.TryGetBuffer(line, true, out cars);
-            return line;
+            return line == Entity.Null || !em.Exists(line) || !em.HasComponent<TransportLine>(line) ? Entity.Null : line;
         }
 
-        private static int Signature(Entity line, DynamicBuffer<BTS_ConsistCar> cars) {
+        private static int Signature(Entity line, IReadOnlyList<BTS_ConsistCar> cars) {
             unchecked {
                 var hash = line.Index * 31 + line.Version;
-                if (cars.IsCreated) {
-                    for (var i = 0; i < cars.Length; i++) {
-                        hash = hash * 31 + cars[i].m_Prefab.Index * 2 + (cars[i].m_Reversed ? 1 : 0);
-                    }
+                for (var i = 0; i < cars.Count; i++) {
+                    hash = hash * 31 + cars[i].m_Prefab.Index * 2 + (cars[i].m_Reversed ? 1 : 0);
                 }
 
                 return hash;
@@ -504,22 +501,15 @@ namespace BetterTransitSelector.Systems {
         }
 
         /// <summary>Lays the train out from the front (z = 0) backwards, each car as the game couples it.</summary>
-        private void Build(DynamicBuffer<BTS_ConsistCar> cars) {
+        private void Build(IReadOnlyList<BTS_ConsistCar> cars) {
             EnsureStudio();
             ClearTrain();
 
             m_Train = new GameObject("BTS Consist Preview Train") { hideFlags = HideFlags.HideAndDontSave, layer = kLayer };
             m_Train.transform.SetParent(m_Root.transform, false);
 
-            if (!cars.IsCreated) {
-                return;
-            }
-
-            // Copied first: building loads assets, and the buffer must not be held across that.
-            var list = new List<BTS_ConsistCar>(cars.Length);
-            for (var i = 0; i < cars.Length; i++) {
-                list.Add(cars[i]);
-            }
+            // Copied first: building loads assets, and the draft must not change under it.
+            var list = new List<BTS_ConsistCar>(cars);
 
             var em     = EntityManager;
             var cursor = 0f;

@@ -331,6 +331,22 @@ export const customOriginalOf = (prefabName: string): string | null => {
     return at > 0 ? prefabName.slice(0, at) : null;
 };
 
+export interface ConsistConfigRow {
+    id: string;
+    name: string;
+    lead: Entity;
+    engine: Entity;
+    thumbnail: string;
+    cars: number;
+    passengers: number;
+    cargo: number;
+    maxSpeed: number;
+    missing: boolean;
+    canLead: boolean;
+    noEngine: boolean;
+    selected: boolean;
+}
+
 export interface ConsistBuilder {
     valid: boolean;
 
@@ -341,8 +357,12 @@ export interface ConsistBuilder {
     // Running trains that differ from the built train; a rolling refit replaces them one at a time.
     mismatched: number;
     refitting: boolean;
-    fixPrimary: Entity;
-    fixSecondary: Entity;
+    editingId: string;
+    editingName: string;
+    // What the line runs: the game's trains, a saved train, or a train no saved one matches.
+    lineState: "Default" | "Config" | "Modified";
+    otherModels: boolean;
+    configs: ConsistConfigRow[];
     cars: ConsistSlot[];
 
     related: Entity[];

@@ -89,8 +89,11 @@ export const CONSIST_BUILDER = new OneWayBinding<ConsistBuilder>("consistBuilder
     status: "Vanilla",
     mismatched: 0,
     refitting: false,
-    fixPrimary: { index: 0, version: 0 },
-    fixSecondary: { index: 0, version: 0 },
+    editingId: "",
+    editingName: "",
+    lineState: "Default",
+    otherModels: false,
+    configs: [],
     cars: [],
     related: [],
     models: [],
@@ -109,6 +112,14 @@ export const consistMirror = triggers.create<[]>("consistMirror");
 export const consistLoadRecipe = triggers.create<[Entity]>("consistLoadRecipe");
 export const consistClear = triggers.create<[]>("consistClear");
 export const consistCopyRunning = triggers.create<[]>("consistCopyRunning");
+export const consistConfigSaveNew = triggers.create<[string]>("consistConfigSaveNew");
+export const consistConfigSave = triggers.create<[]>("consistConfigSave");
+export const consistConfigRename = triggers.create<[string, string]>("consistConfigRename");
+export const consistConfigDelete = triggers.create<[string]>("consistConfigDelete");
+// An empty id starts a new, empty train.
+export const consistConfigOpen = triggers.create<[string]>("consistConfigOpen");
+export const consistApply = triggers.create<[string]>("consistApply");
+export const consistApplyDefault = triggers.create<[]>("consistApplyDefault");
 export const consistRefit = triggers.create<[]>("consistRefit");
 export const consistRefitStop = triggers.create<[]>("consistRefitStop");
 

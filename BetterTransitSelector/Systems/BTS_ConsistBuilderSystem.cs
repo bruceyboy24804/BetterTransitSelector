@@ -6,7 +6,9 @@ namespace BetterTransitSelector.Systems {
     using System.Linq;
 
     using Colossal.Entities;
+    using Colossal.Serialization.Entities;
 
+    using Game;
     using Game.Net;
     using Game.Prefabs;
     using Game.Routes;
@@ -26,12 +28,13 @@ namespace BetterTransitSelector.Systems {
     #endregion
 
     /// <summary>
-    /// Backs the train builder in the vehicle section: publishes the selected line's built train and the
-    /// cars that can run on it, and edits the line's <see cref="BTS_ConsistCar"/> buffer.
+    /// Backs the train builder: edits a draft train, keeps the player's saved trains, and applies one to the
+    /// selected line when it is picked in the vehicle dropdown.
     /// </summary>
     /// <remarks>
-    /// Model selection is never written here. When the built train needs a model the line has not
-    /// selected, the UI offers a fix that goes through vanilla's own <c>selectVehicles</c> trigger.
+    /// Editing never touches the line: its <see cref="BTS_ConsistCar"/> buffer is written only by the apply
+    /// triggers, as a copy, so later edits to a saved train leave lines alone until it is picked again. Model
+    /// selection is never written here; the UI sends each row's models through vanilla's <c>selectVehicles</c>.
     /// </remarks>
     public partial class BTS_ConsistBuilderSystem : CommonUISystemBase {
         protected override string ModId => Mod.Instance.Id;
@@ -47,6 +50,19 @@ namespace BetterTransitSelector.Systems {
         private BTS_CustomCarSystem m_CustomCars;
 
         private EntityQuery m_CarQuery;
+
+        /// <summary>Every installed car, locked or not: a saved train may name one still locked in this city.</summary>
+        private EntityQuery m_AllCarsQuery;
+
+        private readonly SavedConsistStore m_Library = new SavedConsistStore();
+
+        private readonly List<BTS_ConsistCar> m_Draft = new List<BTS_ConsistCar>();
+        private Entity m_DraftLine;
+        private string m_EditingId = string.Empty;
+        private int    m_DraftVersion;
+
+        /// <summary>The draft train, front first. Never saved with the game.</summary>
+        public IReadOnlyList<BTS_ConsistCar> DraftCars => m_Draft;
 
         private ValueBindingHelper<ConsistBuilder> m_Builder;
 
@@ -71,6 +87,12 @@ namespace BetterTransitSelector.Systems {
                                   .WithAll<TrainData, ObjectData, PrefabData>()
                                   .WithNone<Locked>()
                                   .Build();
+
+            m_AllCarsQuery = SystemAPI.QueryBuilder()
+                                      .WithAll<TrainData, ObjectData, PrefabData>()
+                                      .Build();
+
+            m_Library.Load();
 
             m_Builder = CreateBinding("consistBuilder", ConsistBuilder.Empty);
 
@@ -138,6 +160,57 @@ namespace BetterTransitSelector.Systems {
             CreateTrigger("consistClear", () => Edit(cars => cars.Clear()));
             CreateTrigger("consistCopyRunning", () => Edit(CopyRunningTrain));
 
+            CreateTrigger<string>("consistConfigSaveNew", name => {
+                SelectedRailLine(out var track, out _);
+                if (TryDraftCars(out var saved)) {
+                    m_EditingId = m_Library.Add(name, track, saved).Id;
+                }
+            });
+            CreateTrigger("consistConfigSave", () => {
+                SelectedRailLine(out var track, out _);
+                if (m_EditingId != string.Empty && TryDraftCars(out var saved)) {
+                    m_Library.Replace(m_EditingId, track, saved);
+                }
+            });
+            CreateTrigger<string, string>("consistConfigRename", (id, name) => m_Library.Rename(id, name));
+            CreateTrigger<string>("consistConfigDelete", id => {
+                // The draft stays, as an unsaved train; lines using a copy of it are unaffected.
+                m_Library.Delete(id);
+                if (m_EditingId == id) {
+                    m_EditingId = string.Empty;
+                }
+            });
+            CreateTrigger<string>("consistConfigOpen", id => {
+                if (m_Library.TryGet(id, out var config)) {
+                    Resolve(config, CarsByName(), m_Draft);
+                    m_EditingId = id;
+                    m_DraftVersion++;
+                } else if (string.IsNullOrEmpty(id)) {
+                    // "New train": an empty draft.
+                    m_EditingId = string.Empty;
+                    m_Draft.Clear();
+                    m_DraftVersion++;
+                }
+            });
+
+            CreateTrigger<string>("consistApply", id => {
+                var line = SelectedRailLine(out _, out _);
+                if (line == Entity.Null || !m_Library.TryGet(id, out var config)) {
+                    return;
+                }
+
+                var cars = new List<BTS_ConsistCar>();
+                if (Resolve(config, CarsByName(), cars)) {
+                    WriteLine(line, cars);
+                }
+            });
+            CreateTrigger("consistApplyDefault", () => {
+                var line = SelectedRailLine(out _, out _);
+                if (line != Entity.Null) {
+                    WriteLine(line, new List<BTS_ConsistCar>());
+                }
+            });
+
             // Rolling refit: BTS_RefitSystem retires the line's mismatched trains one at a time.
             CreateTrigger("consistRefit", () => {
                 var line = SelectedRailLine(out _, out _);
@@ -163,13 +236,29 @@ namespace BetterTransitSelector.Systems {
 
         protected override void OnUpdate() {
             var line      = SelectedRailLine(out var track, out var lineData);
+            if (line != m_DraftLine) {
+                m_DraftLine = line;
+                m_EditingId = string.Empty;
+                LoadDraft(line);
+            }
+
             var signature = Signature(line);
             if (signature != m_Signature) {
-                m_Signature      = signature;
                 m_Builder.Value = line == Entity.Null ? ConsistBuilder.Empty : Build(line, track, lineData);
+                // Only after a successful build, so a failed one is not mistaken for up to date.
+                m_Signature = signature;
             }
 
             base.OnUpdate();
+        }
+
+        protected override void OnGamePreload(Purpose purpose, GameMode mode) {
+            base.OnGamePreload(purpose, mode);
+            // The draft holds this world's entities; a load may reuse them for something else.
+            m_DraftLine = Entity.Null;
+            m_EditingId = string.Empty;
+            m_Draft.Clear();
+            m_DraftVersion++;
         }
 
         #region Publishing
@@ -183,14 +272,16 @@ namespace BetterTransitSelector.Systems {
             };
 
             em.TryGetBuffer(line, true, out DynamicBuffer<VehicleModel> models);
-            em.TryGetBuffer(line, true, out DynamicBuffer<BTS_ConsistCar> cars);
-            FillRelated(builder.Related, models, cars);
+            em.TryGetBuffer(line, true, out DynamicBuffer<BTS_ConsistCar> lineCars);
+            FillRelated(builder.Related, models, m_Draft);
 
             builder.Refitting = em.HasComponent<BTS_Refit>(line);
-            if (cars.IsCreated && cars.Length > 0) {
-                using var build = cars.ToNativeArray(Allocator.Temp);
-                builder.Mismatched = ConsistRules.CountMismatched(em, line, build);
+            if (lineCars.IsCreated && lineCars.Length > 0) {
+                using var running = lineCars.ToNativeArray(Allocator.Temp);
+                builder.Mismatched  = ConsistRules.CountMismatched(em, line, running);
+                builder.OtherModels = models.IsCreated && HasOtherPrimary(models, lineCars);
             }
+
             if (models.IsCreated) {
                 for (var i = 0; i < models.Length; i++) {
                     foreach (var model in new[] { models[i].m_PrimaryPrefab, models[i].m_SecondaryPrefab }) {
@@ -201,46 +292,21 @@ namespace BetterTransitSelector.Systems {
                 }
             }
 
-            if (!cars.IsCreated || cars.Length == 0) {
-                return builder;
+            if (m_Library.TryGet(m_EditingId, out var editing)) {
+                builder.EditingId   = editing.Id;
+                builder.EditingName = editing.Name;
             }
 
-            var lead         = -1;
-            var firstPrimary = Entity.Null;
-            var firstEngine  = Entity.Null;
-            var engineOk     = false;
-            for (var i = 0; i < cars.Length; i++) {
-                var prefab = cars[i].m_Prefab;
-                if (!IsCatalogueCar(prefab)) {
-                    continue;
-                }
+            FillConfigs(builder, track, lineData, models, lineCars);
 
-                if (ConsistRules.IsPrimary(em, prefab)) {
-                    if (firstPrimary == Entity.Null) {
-                        firstPrimary = prefab;
-                    }
-
-                    if (lead < 0 && (!models.IsCreated || ConsistRules.PrimaryAccepted(models, prefab))) {
-                        lead = i;
-                    }
-                }
-
-                if (ConsistRules.IsSecondary(em, prefab)) {
-                    if (firstEngine == Entity.Null) {
-                        firstEngine = prefab;
-                    }
-
-                    engineOk |= models.IsCreated && ConsistRules.SecondaryAccepted(models, prefab);
-                }
-            }
-
-            for (var i = 0; i < cars.Length; i++) {
-                var prefab = cars[i].m_Prefab;
+            var lead = FirstLead(m_Draft, models);
+            for (var i = 0; i < m_Draft.Count; i++) {
+                var prefab = m_Draft[i].m_Prefab;
                 // A custom car reports its asset too, so the UI can name it and show which figures changed.
                 var custom  = m_CustomCars.TryDescribe(prefab, out var original, out _);
                 var figures = FiguresOf(prefab);
                 builder.Cars.Add(new ConsistSlot(
-                    prefab, NameOf(prefab), cars[i].m_Reversed, !IsCatalogueCar(prefab), i == lead,
+                    prefab, NameOf(prefab), m_Draft[i].m_Reversed, !IsCatalogueCar(prefab), i == lead,
                     custom ? NameOf(original) : string.Empty,
                     KindOf(prefab),
                     LengthOf(prefab),
@@ -249,26 +315,142 @@ namespace BetterTransitSelector.Systems {
                     custom ? FiguresOf(original) : figures));
             }
 
-            if (lead < 0) {
-                builder.Status     = firstPrimary == Entity.Null ? "NoLead" : "NeedsPrimary";
-                builder.FixPrimary = firstPrimary;
-            } else if (models.IsCreated
-                       && ConsistRules.HasSecondary(models)
-                       && !em.HasComponent<MultipleUnitTrainData>(cars[lead].m_Prefab)
-                       && !engineOk) {
-                // Vanilla retires a locomotive-hauled train that carries none of the line's selected
-                // locomotives (RouteUtils.CheckVehicleModel); multiple-unit trains are exempt from that check.
-                builder.Status       = firstEngine == Entity.Null ? "NoEngine" : "NeedsSecondary";
-                builder.FixSecondary = firstEngine;
-            } else if (models.IsCreated && HasOtherPrimary(models, cars)) {
-                // A parked train of another selected lead model can only be rebuilt if its lead car's prefab is
-                // in the built train (BTS_ConsistSystem never swaps the prefab of a train already in the world).
-                builder.Status = "OtherModels";
-            } else {
-                builder.Status = "Ok";
+            if (m_Draft.Count > 0) {
+                builder.Status = lead < 0 ? "NoLead"
+                    : !em.HasComponent<MultipleUnitTrainData>(m_Draft[lead].m_Prefab) && !m_Draft.Any(c => IsCatalogueCar(c.m_Prefab) && ConsistRules.IsSecondary(em, c.m_Prefab)) ? "NoEngine"
+                    : "Ok";
             }
 
             return builder;
+        }
+
+        /// <summary>The first car that can lead, preferring one the line already accepts. -1 when none can.</summary>
+        private int FirstLead(List<BTS_ConsistCar> cars, DynamicBuffer<VehicleModel> models) {
+            var em    = EntityManager;
+            var first = -1;
+            for (var i = 0; i < cars.Count; i++) {
+                var prefab = cars[i].m_Prefab;
+                if (!IsCatalogueCar(prefab) || !ConsistRules.IsPrimary(em, prefab)) {
+                    continue;
+                }
+
+                if (models.IsCreated && ConsistRules.PrimaryAccepted(models, prefab)) {
+                    return i;
+                }
+
+                if (first < 0) {
+                    first = i;
+                }
+            }
+
+            return first;
+        }
+
+        /// <summary>Lists the saved trains this line can run and works out which one, if any, it is running.</summary>
+        private void FillConfigs(ConsistBuilder builder, TrackTypes track, TransportLineData lineData,
+                                 DynamicBuffer<VehicleModel> models, DynamicBuffer<BTS_ConsistCar> lineCars) {
+            var em      = EntityManager;
+            var byName  = CarsByName();
+            var cars    = new List<BTS_ConsistCar>();
+            var running = lineCars.IsCreated && lineCars.Length > 0;
+            builder.LineState = running ? "Modified" : "Default";
+
+            foreach (var config in m_Library.All) {
+                if (config.Track != track) {
+                    continue;
+                }
+
+                var complete = Resolve(config, byName, cars);
+                // Same rule as the catalogue: a passenger line has no use for freight cars, and the other way round.
+                var fits = true;
+                var row  = new ConsistConfigRow { Id = config.Id, Name = config.Name, Cars = cars.Count, Missing = !complete };
+                var low  = float.MaxValue;
+                foreach (var car in cars) {
+                    var prefab  = car.m_Prefab;
+                    var figures = FiguresOf(prefab);
+                    fits &= !(!lineData.m_PassengerTransport && em.HasComponent<PublicTransportVehicleData>(prefab))
+                            && !(!lineData.m_CargoTransport && em.HasComponent<CargoTransportVehicleData>(prefab));
+                    row.Passengers += figures.Passengers;
+                    row.Cargo      += figures.Cargo;
+                    if (figures.MaxSpeed > 0f) {
+                        low = Math.Min(low, figures.MaxSpeed);
+                    }
+                }
+
+                if (!fits) {
+                    continue;
+                }
+
+                row.MaxSpeed = low == float.MaxValue ? 0f : low;
+
+                var lead = FirstLead(cars, models);
+                row.CanLead = lead >= 0;
+                if (lead >= 0) {
+                    row.Lead = cars[lead].m_Prefab;
+                    if (models.IsCreated && ConsistRules.HasSecondary(models) && !em.HasComponent<MultipleUnitTrainData>(row.Lead)) {
+                        var accepted = false;
+                        var engine   = Entity.Null;
+                        for (var i = 0; i < cars.Count; i++) {
+                            var prefab = cars[i].m_Prefab;
+                            accepted |= ConsistRules.SecondaryAccepted(models, prefab);
+                            if (engine == Entity.Null && IsCatalogueCar(prefab) && ConsistRules.IsSecondary(em, prefab)) {
+                                engine = prefab;
+                            }
+                        }
+
+                        row.Engine = accepted ? Entity.Null : engine;
+                        // Vanilla retires a locomotive-hauled train with none of the line's selected locomotives.
+                        row.NoEngine = !accepted && engine == Entity.Null;
+                    }
+                }
+
+                row.Thumbnail = ThumbnailOf(m_CustomCars.TryDescribe(row.Lead, out var original, out _) ? original : row.Lead);
+                row.Selected  = running && SameTrain(lineCars, cars);
+                if (row.Selected) {
+                    builder.LineState = "Config";
+                }
+
+                builder.Configs.Add(row);
+            }
+        }
+
+        private static bool SameTrain(DynamicBuffer<BTS_ConsistCar> a, List<BTS_ConsistCar> b) {
+            if (a.Length != b.Count) {
+                return false;
+            }
+
+            for (var i = 0; i < a.Length; i++) {
+                if (a[i].m_Prefab != b[i].m_Prefab || a[i].m_Reversed != b[i].m_Reversed) {
+                    return false;
+                }
+            }
+
+            return true;
+        }
+
+        private Dictionary<string, Entity> CarsByName() {
+            var map = new Dictionary<string, Entity>();
+            using var entities = m_AllCarsQuery.ToEntityArray(Allocator.Temp);
+            foreach (var entity in entities) {
+                map[m_PrefabSystem.GetPrefabName(entity)] = entity;
+            }
+
+            return map;
+        }
+
+        /// <summary>
+        /// Fills <paramref name="cars"/> with a saved train's cars. A car whose asset is gone becomes a null slot.
+        /// </summary>
+        /// <returns>False when any car is missing.</returns>
+        private static bool Resolve(SavedConsist config, Dictionary<string, Entity> byName, List<BTS_ConsistCar> cars) {
+            cars.Clear();
+            var complete = true;
+            foreach (var car in config.Cars) {
+                complete &= byName.TryGetValue(car.Prefab, out var prefab);
+                cars.Add(new BTS_ConsistCar(prefab, car.Reversed));
+            }
+
+            return complete;
         }
 
         private List<ConsistCatalogueCar> Catalogue(TrackTypes track, TransportLineData lineData) {
@@ -319,7 +501,7 @@ namespace BetterTransitSelector.Systems {
         /// The line's selected models, every car their recipes (<see cref="VehicleCarriageElement"/>) name, and
         /// every car already in the built train, each once.
         /// </summary>
-        private void FillRelated(List<Entity> related, DynamicBuffer<VehicleModel> models, DynamicBuffer<BTS_ConsistCar> cars) {
+        private void FillRelated(List<Entity> related, DynamicBuffer<VehicleModel> models, List<BTS_ConsistCar> cars) {
             var seen = new HashSet<Entity>();
             void Add(Entity prefab) {
                 if (prefab == Entity.Null || !seen.Add(prefab)) {
@@ -341,10 +523,8 @@ namespace BetterTransitSelector.Systems {
                 }
             }
 
-            if (cars.IsCreated) {
-                for (var i = 0; i < cars.Length; i++) {
-                    Add(cars[i].m_Prefab);
-                }
+            foreach (var car in cars) {
+                Add(car.m_Prefab);
             }
         }
 
@@ -377,15 +557,21 @@ namespace BetterTransitSelector.Systems {
                 }
 
                 var em = EntityManager;
+                hash = hash * 31 + m_DraftVersion;
+                hash = hash * 31 + m_Library.Version;
+                hash = hash * 31 + m_EditingId.GetHashCode();
+                foreach (var car in m_Draft) {
+                    // A custom car's data fills in the frame after it is created; its speed moving from 0
+                    // republishes the slot with real figures.
+                    if (em.TryGetComponent(car.m_Prefab, out TrainData train)) {
+                        hash = hash * 31 + train.m_MaxSpeed.GetHashCode();
+                    }
+                }
+
                 if (em.TryGetBuffer(line, true, out DynamicBuffer<BTS_ConsistCar> cars)) {
                     hash = hash * 31 + cars.Length + 1;
                     for (var i = 0; i < cars.Length; i++) {
                         hash = hash * 31 + cars[i].m_Prefab.Index * 2 + (cars[i].m_Reversed ? 1 : 0);
-                        // A custom car's data fills in the frame after it is created; its speed moving from 0
-                        // republishes the slot with real figures.
-                        if (em.TryGetComponent(cars[i].m_Prefab, out TrainData train)) {
-                            hash = hash * 31 + train.m_MaxSpeed.GetHashCode();
-                        }
                     }
                 }
 
@@ -411,23 +597,47 @@ namespace BetterTransitSelector.Systems {
 
         #region Editing
 
-        /// <summary>
-        /// Applies <paramref name="change"/> to the selected line's built train. An empty result removes the
-        /// buffer, so a line the player has reset carries nothing of this mod in the save.
-        /// </summary>
+        /// <summary>Applies <paramref name="change"/> to the draft. The line itself is not touched.</summary>
         private void Edit(System.Action<List<BTS_ConsistCar>> change) {
-            var line = SelectedRailLine(out _, out _);
-            if (line == Entity.Null) {
+            if (SelectedRailLine(out _, out _) == Entity.Null) {
                 return;
             }
 
-            var em   = EntityManager;
-            var cars = em.TryGetBuffer(line, true, out DynamicBuffer<BTS_ConsistCar> existing)
-                ? existing.AsNativeArray().ToList()
-                : new List<BTS_ConsistCar>();
+            change(m_Draft);
+            m_DraftVersion++;
+        }
 
-            change(cars);
+        private void LoadDraft(Entity line) {
+            m_Draft.Clear();
+            if (line != Entity.Null && EntityManager.TryGetBuffer(line, true, out DynamicBuffer<BTS_ConsistCar> cars)) {
+                for (var i = 0; i < cars.Length; i++) {
+                    m_Draft.Add(cars[i]);
+                }
+            }
 
+            m_DraftVersion++;
+        }
+
+        /// <summary>The draft by prefab name. False when it is empty or has a car whose asset is gone.</summary>
+        private bool TryDraftCars(out List<SavedConsistCar> cars) {
+            cars = new List<SavedConsistCar>(m_Draft.Count);
+            foreach (var car in m_Draft) {
+                if (!IsCatalogueCar(car.m_Prefab)) {
+                    return false;
+                }
+
+                cars.Add(new SavedConsistCar { Prefab = NameOf(car.m_Prefab), Reversed = car.m_Reversed });
+            }
+
+            return cars.Count > 0;
+        }
+
+        /// <summary>
+        /// Replaces the line's train. An empty one removes the buffer, so a line on the game default carries
+        /// nothing of this mod in the save.
+        /// </summary>
+        private void WriteLine(Entity line, List<BTS_ConsistCar> cars) {
+            var em = EntityManager;
             if (cars.Count == 0) {
                 if (em.HasBuffer<BTS_ConsistCar>(line)) {
                     em.RemoveComponent<BTS_ConsistCar>(line);
@@ -655,7 +865,9 @@ namespace BetterTransitSelector.Systems {
 
         /// <summary>The car's picture. Callers pass a custom car's original: the copy has no asset to find one on.</summary>
         private string ThumbnailOf(Entity prefab) =>
-            m_ImageSystem.GetThumbnail(prefab) ?? m_ImageSystem.placeholderIcon;
+            prefab != Entity.Null && EntityManager.Exists(prefab)
+                ? m_ImageSystem.GetThumbnail(prefab) ?? m_ImageSystem.placeholderIcon
+                : m_ImageSystem.placeholderIcon;
 
         /// <summary>A car prefab's figures as the simulation reads them; zeros until the prefab has initialised.</summary>
         private CarFigures FiguresOf(Entity prefab) {
