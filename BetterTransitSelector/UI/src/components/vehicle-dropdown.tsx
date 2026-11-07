@@ -1,4 +1,4 @@
-﻿import { useEffect, useRef, useState } from "react";
+﻿import { useEffect, useRef, useState, type ReactNode } from "react";
 import { createPortal } from "react-dom";
 import { VC, VT } from "vanilla/Components";
 import { c } from "utils/classes";
@@ -52,6 +52,10 @@ export interface VehicleDropdownProps {
     stats: StatsLookup;
     nameOf: (vehicle: VehiclePrefab) => string;
     onToggle: (vehicle: VehiclePrefab, selected: boolean) => void;
+
+    // Rows above the vehicles, filtered by the same search box.
+    renderHeader?: (query: string) => ReactNode;
+    forceSearch?: boolean;
 }
 
 const sameEntity = (a: VehiclePrefab, b: VehiclePrefab) =>
@@ -65,6 +69,8 @@ export const VehicleDropdown = ({
     stats,
     nameOf,
     onToggle,
+    renderHeader,
+    forceSearch = false,
 }: VehicleDropdownProps) => {
     const [query, setQuery] = useState("");
     const [filters, setFilters] = useState<VehicleFilters>(NO_FILTERS);
@@ -321,7 +327,7 @@ export const VehicleDropdown = ({
 
     const menu = (
         <div className={styles.menuBody} style={menuStyle}>
-            {available.length >= SEARCH_THRESHOLD && (
+            {(forceSearch || available.length >= SEARCH_THRESHOLD) && (
                 <div className={styles.searchBar}>
                     <input
                         className={styles.search}
@@ -334,6 +340,8 @@ export const VehicleDropdown = ({
             )}
 
             <VC.Scrollable vertical={true} className={styles.listScroll} style={listScrollStyle}>
+
+            {renderHeader?.(query)}
 
             {recent.length > 0 && (
 

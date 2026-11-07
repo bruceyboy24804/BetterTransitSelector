@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { createPortal } from "react-dom";
-import { trigger, useValue } from "cs2/api";
+import { useValue } from "cs2/api";
 import { VC, VT } from "vanilla/Components";
 import { c } from "utils/classes";
 import {
@@ -16,6 +16,11 @@ import {
 } from "../vehicle-stats";
 import {
     consistClear,
+    consistConfigDelete,
+    consistConfigOpen,
+    consistConfigRename,
+    consistConfigSave,
+    consistConfigSaveNew,
     consistCopyRunning,
     CONSIST_PREVIEW_RUNNING,
     consistPreviewReset,
@@ -36,10 +41,6 @@ import {
 import { CountValue, LengthValue, SpeedValue } from "./stat-value";
 import { ConsistStage } from "./consist-preview";
 import styles from "./consist-builder.module.scss";
-
-// Model selection is only ever changed through vanilla's own trigger, never by the mod.
-const VANILLA_GROUP = "SelectVehiclesSection";
-const NULL_ENTITY: Entity = { index: 0, version: 0 };
 
 // Set inline, not in the SCSS: css-loader would try to bundle a game-relative url().
 const CLOSE = "Media/Glyphs/Close.svg";
@@ -73,7 +74,7 @@ const useCatalogueLookup = (builder: ConsistBuilder) => {
 
 const Summary = ({ builder, t }: { builder: ConsistBuilder; t: Translate }) => {
     if (builder.cars.length === 0) {
-        return <div className={styles.summary}>{t("Consist.Vanilla", "Game default")}</div>;
+        return <div className={styles.summary}>{t("Consist.NewTrain", "New train")}</div>;
     }
 
     const { passengers, cargo, length, topSpeed } = totalsOf(builder);
@@ -124,7 +125,7 @@ export const ConsistBuilderRow = () => {
         <>
             <div className={styles.row}>
                 <div className={styles.rowTitle}>{t("Consist.Title", "Train builder")}</div>
-                <Summary builder={builder} t={t} />
+                <div className={styles.spacer} />
                 <VC.ToolButton
                     src=""
                     selected={open}
@@ -135,8 +136,34 @@ export const ConsistBuilderRow = () => {
                 </VC.ToolButton>
             </div>
 
+            {builder.lineState !== "Default" && <RefitRow builder={builder} t={t} />}
+
             {open && createPortal(<ConsistBuilderWindow onClose={() => setOpen(false)} />, document.body)}
         </>
+    );
+};
+
+/** The line's running trains against the train it has picked. About the line, so it lives outside the window. */
+const RefitRow = ({ builder, t }: { builder: ConsistBuilder; t: Translate }) => {
+    const button = (label: string, tooltip: string, onSelect: () => void) => (
+        <VC.ToolButton src="" tooltip={tooltip} className={c(VT.toolButton.button, styles.textButton)} onSelect={onSelect}>
+            {label}
+        </VC.ToolButton>
+    );
+    return (
+        <div className={styles.refit}>
+            <div className={styles.refitText}>
+                {builder.refitting
+                    ? t("Consist.Refitting", "Refitting: {COUNT} train(s) still to replace, one at a time.", { COUNT: builder.mismatched })
+                    : builder.mismatched > 0
+                      ? t("Consist.Mismatched", "{COUNT} running train(s) still have the old cars. New trains are built like this.", { COUNT: builder.mismatched })
+                      : t("Consist.AllMatch", "Every running train matches this train.")}
+            </div>
+            {builder.refitting
+                ? button(t("Consist.RefitStop", "Stop"), t("Consist.RefitStop.Tooltip", "Stop replacing trains. A train already leaving the line still leaves."), () => consistRefitStop())
+                : builder.mismatched > 0 &&
+                  button(t("Consist.Refit", "Refit running trains"), t("Consist.Refit.Tooltip", "Retire the old trains one at a time: each finishes at a stop and returns to its depot, and the depot sends a new one built like this. The line is never more than one train short."), () => consistRefit())}
+        </div>
     );
 };
 
@@ -496,6 +523,18 @@ const ConsistBuilderWindow = ({ onClose }: { onClose: () => void }) => {
         setQuery("");
     };
 
+    // Names need not be unique, but the pick list goes by label, so repeats get a number.
+    const configLabels = new Map<string, string>();
+    for (const config of builder.configs) {
+        let label = config.name;
+        for (let n = 2; configLabels.has(label); n++) label = `${config.name} (${n})`;
+        configLabels.set(label, config.id);
+    }
+    const editingLabel = [...configLabels].find(([, id]) => id === builder.editingId)?.[0] ?? builder.editingName;
+    const [name, setName] = useState(builder.editingName);
+    useEffect(() => setName(builder.editingName), [builder.editingId, builder.editingName]);
+    const canSave = cars.length > 0 && !cars.some((car) => car.missing);
+
     const textButton = (
         label: string,
         onSelect: () => void,
@@ -516,25 +555,10 @@ const ConsistBuilderWindow = ({ onClose }: { onClose: () => void }) => {
 
     const status = (() => {
         switch (builder.status) {
-            case "NeedsPrimary":
-                return {
-                    text: t("Consist.NeedsPrimary", "The line has not selected any lead car in this train, so the game would retire it."),
-                    fix: () => trigger(VANILLA_GROUP, "selectVehicles", builder.fixPrimary, NULL_ENTITY),
-                };
-            case "NeedsSecondary":
-                return {
-                    text: t("Consist.NeedsSecondary", "None of this train's engines is a selected engine model, so the game would retire it."),
-                    fix: () => trigger(VANILLA_GROUP, "selectVehicles", NULL_ENTITY, builder.fixSecondary),
-                };
-            case "OtherModels":
-                return {
-                    text: t("Consist.OtherModels", "The line also has lead models selected that aren't in this train. Trains of those models already parked in the depot are sent out unchanged; deselect them to always get this train."),
-                    fix: null,
-                };
             case "NoLead":
-                return { text: t("Consist.NoLead", "Add a carriage or multiple-unit car: the train needs one to lead it."), fix: null };
+                return t("Consist.NoLead", "Add a carriage or multiple-unit car: the train needs one to lead it.");
             case "NoEngine":
-                return { text: t("Consist.NoEngine", "The line has an engine model selected; add an engine to this train."), fix: null };
+                return t("Consist.NoEngine", "A locomotive-hauled train needs an engine.");
             default:
                 return null;
         }
@@ -573,6 +597,39 @@ const ConsistBuilderWindow = ({ onClose }: { onClose: () => void }) => {
             </div>
 
             <div className={styles.windowBody}>
+                <div className={styles.filterBar}>
+                    <PickList
+                        label={t("Consist.Config", "Saved train")}
+                        anyLabel={t("Consist.NewTrain", "New train")}
+                        value={builder.editingId ? editingLabel : null}
+                        options={[...configLabels.keys()]}
+                        onChange={(label) => {
+                            consistConfigOpen(label === null ? "" : configLabels.get(label) ?? "");
+                            setSelection(null);
+                            setInsertGap(null);
+                        }}
+                        open={openPick === "config"}
+                        onOpen={(open) => setOpenPick(open ? "config" : null)}
+                    />
+                    <input
+                        className={styles.search}
+                        type="text"
+                        value={name}
+                        placeholder={t("Consist.Config.Name", "Train name")}
+                        onChange={(e) => setName(e.target.value)}
+                        onBlur={() => {
+                            if (builder.editingId && name.trim() !== "" && name !== builder.editingName) {
+                                consistConfigRename(builder.editingId, name);
+                            }
+                        }}
+                    />
+                    {builder.editingId !== "" &&
+                        textButton(t("Consist.Config.Save", "Save"), () => consistConfigSave(), { disabled: !canSave })}
+                    {textButton(t("Consist.Config.SaveNew", "Save as new"), () => consistConfigSaveNew(name), { disabled: !canSave })}
+                    {builder.editingId !== "" &&
+                        textButton(t("Consist.Config.Delete", "Delete"), () => consistConfigDelete(builder.editingId))}
+                </div>
+
                 <div className={styles.sectionTitle}>
                     <div className={styles.sectionLabel}>{t("Consist.Train", "Train")}</div>
                     <Summary builder={builder} t={t} />
@@ -682,30 +739,9 @@ const ConsistBuilderWindow = ({ onClose }: { onClose: () => void }) => {
                     )
                 )}
 
-                {cars.length > 0 && (
-                    <div className={styles.refit}>
-                        <div className={styles.refitText}>
-                            {builder.refitting
-                                ? t("Consist.Refitting", "Refitting: {COUNT} train(s) still to replace, one at a time.", { COUNT: builder.mismatched })
-                                : builder.mismatched > 0
-                                  ? t("Consist.Mismatched", "{COUNT} running train(s) still have the old cars. New trains are built like this.", { COUNT: builder.mismatched })
-                                  : t("Consist.AllMatch", "Every running train matches this train.")}
-                        </div>
-                        {builder.refitting
-                            ? textButton(t("Consist.RefitStop", "Stop"), () => consistRefitStop(), {
-                                  tooltip: t("Consist.RefitStop.Tooltip", "Stop replacing trains. A train already leaving the line still leaves."),
-                              })
-                            : builder.mismatched > 0 &&
-                              textButton(t("Consist.Refit", "Refit running trains"), () => consistRefit(), {
-                                  tooltip: t("Consist.Refit.Tooltip", "Retire the old trains one at a time: each finishes at a stop and returns to its depot, and the depot sends a new one built like this. The line is never more than one train short."),
-                              })}
-                    </div>
-                )}
-
                 {status && (
                     <div className={styles.status}>
-                        <div className={styles.statusText}>{status.text}</div>
-                        {status.fix && textButton(t("Consist.Fix", "Select it"), status.fix)}
+                        <div className={styles.statusText}>{status}</div>
                     </div>
                 )}
 
@@ -757,7 +793,7 @@ const ConsistBuilderWindow = ({ onClose }: { onClose: () => void }) => {
                             setSelection(null);
                         })}
                     {cars.length > 0 &&
-                        textButton(t("Consist.Reset", "Reset to game default"), () => {
+                        textButton(t("Consist.Clear", "Clear"), () => {
                             consistClear();
                             setSelection(null);
                         })}

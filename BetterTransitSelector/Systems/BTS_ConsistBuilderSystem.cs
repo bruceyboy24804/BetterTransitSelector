@@ -186,8 +186,10 @@ namespace BetterTransitSelector.Systems {
                     m_EditingId = id;
                     m_DraftVersion++;
                 } else if (string.IsNullOrEmpty(id)) {
+                    // "New train": an empty draft.
                     m_EditingId = string.Empty;
-                    LoadDraft(m_DraftLine);
+                    m_Draft.Clear();
+                    m_DraftVersion++;
                 }
             });
 
