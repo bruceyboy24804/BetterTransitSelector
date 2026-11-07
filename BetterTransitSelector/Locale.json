@@ -207,6 +207,7 @@
 	"BetterTransitSelector.UI[Consist.Mirror.Tooltip]": "Copy the engines at the front to the back of the train, turned round.",
 	"BetterTransitSelector.UI[Consist.TurnAll]": "Turn whole train",
 	"BetterTransitSelector.UI[Consist.Remove]": "Remove",
+	"BetterTransitSelector.UI[Consist.DropToRemove]": "Drop here to remove",
 	"BetterTransitSelector.UI[Consist.Fix]": "Select it",
 	"BetterTransitSelector.UI[Consist.CopyRunning]": "Copy running train",
 	"BetterTransitSelector.UI[Consist.Reset]": "Reset to game default",

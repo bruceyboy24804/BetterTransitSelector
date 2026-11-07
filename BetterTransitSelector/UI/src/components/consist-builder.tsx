@@ -152,10 +152,12 @@ const CarCard = ({
     cars,
     t,
     onSet,
+    onRemove,
 }: {
     cars: ConsistSlot[];
     t: Translate;
     onSet: (stat: CarStat, value: number) => void;
+    onRemove: () => void;
 }) => {
     const first = cars[0];
     if (!first) return null;
@@ -219,6 +221,11 @@ const CarCard = ({
                     </div>
                 );
             })}
+            <div className={styles.cardFooter}>
+                <VC.ToolButton src="" className={c(VT.toolButton.button, styles.textButton)} onSelect={onRemove}>
+                    {t("Consist.Remove", "Remove")}
+                </VC.ToolButton>
+            </div>
         </div>
     );
 };
@@ -304,6 +311,9 @@ const ConsistBuilderWindow = ({ onClose }: { onClose: () => void }) => {
     const [ghost, setGhost] = useState<{ x: number; y: number; thumbnail: string } | null>(null);
     const suppressClick = useRef(false);
     const suppressAdd = useRef(false);
+    // Dragging a car from the train back over the list removes it.
+    const removeZone = useRef<HTMLDivElement | null>(null);
+    const [carOut, setCarOut] = useState<"none" | "dragging" | "over">("none");
     const drop = useRef<() => void>(() => {});
     const dragMove = useRef<(e: MouseEvent) => void>(() => {});
 
@@ -384,6 +394,17 @@ const ConsistBuilderWindow = ({ onClose }: { onClose: () => void }) => {
     const insertCar = (entity: Entity) => {
         const at = insertGap ?? (block ? block.start + block.count : cars.length);
         insertAt(entity, Math.min(at, cars.length));
+    };
+
+    const removeBlock = (start: number, count: number) => {
+        consistRemove(start, count);
+        setSelection(null);
+        setInsertGap(null);
+    };
+
+    const overRemoveZone = (x: number, y: number) => {
+        const box = removeZone.current?.getBoundingClientRect();
+        return !!box && x >= box.left && x <= box.right && y >= box.top && y <= box.bottom;
     };
 
     const startDrag = (d: CarDrag) => {
@@ -594,6 +615,7 @@ const ConsistBuilderWindow = ({ onClose }: { onClose: () => void }) => {
                                 cars={cars.slice(block.start, block.start + block.count)}
                                 t={t}
                                 onSet={(stat, value) => consistSetStat(block.start, block.count, stat, value)}
+                                onRemove={() => removeBlock(block.start, block.count)}
                             />
                         )
                     }
@@ -601,6 +623,20 @@ const ConsistBuilderWindow = ({ onClose }: { onClose: () => void }) => {
                     onMoveBlock={(start, count, to) => {
                         setInsertGap(null);
                         moveBlock(start, count, to);
+                    }}
+                    onCarDrag={(dragged, x, y) => {
+                        const over = overRemoveZone(x, y);
+                        setCarOut(over ? "over" : "dragging");
+                        setGhost(over ? { x, y, thumbnail: cars[dragged.start]?.thumbnail ?? "" } : null);
+                    }}
+                    onCarDrop={(dragged, x, y) => {
+                        setCarOut("none");
+                        setGhost(null);
+                        if (!overRemoveZone(x, y)) return false;
+                        // The release also clicks the list row under the pointer; it must not add that car.
+                        suppressAdd.current = true;
+                        removeBlock(dragged.start, dragged.count);
+                        return true;
                     }}
                 />
 
@@ -634,10 +670,7 @@ const ConsistBuilderWindow = ({ onClose }: { onClose: () => void }) => {
                         {textButton(t("Consist.Repeat", "Repeat"), () => consistRepeat(block.start, block.count, 1), {
                             tooltip: t("Consist.Repeat.Tooltip", "Add another copy of the selected cars straight after them."),
                         })}
-                        {textButton(t("Consist.Remove", "Remove"), () => {
-                            consistRemove(block.start, block.count);
-                            setSelection(null);
-                        })}
+                        {textButton(t("Consist.Remove", "Remove"), () => removeBlock(block.start, block.count))}
                     </div>
                 ) : (
                     cars.length > 0 && (
@@ -787,12 +820,17 @@ const ConsistBuilderWindow = ({ onClose }: { onClose: () => void }) => {
                     ))}
                 </div>
 
+                <div ref={removeZone} className={styles.catalogueZone}>
                 <VC.Scrollable vertical={true} className={styles.catalogue}>
                     {shown.map((car) => (
                         <div
                             key={entityKey(car.entity)}
                             className={styles.catalogueRow}
-                            onMouseDown={() => startDrag({ entity: car.entity, thumbnail: car.thumbnail, moved: false })}
+                            onMouseDown={() => {
+                                // A fresh press: anything left over from an earlier drag no longer applies.
+                                suppressAdd.current = false;
+                                startDrag({ entity: car.entity, thumbnail: car.thumbnail, moved: false });
+                            }}
                             onClick={() => {
                                 // A drag onto the track already inserted the car; the release is not a click.
                                 if (!suppressAdd.current) insertCar(car.entity);
@@ -826,6 +864,12 @@ const ConsistBuilderWindow = ({ onClose }: { onClose: () => void }) => {
                     ))}
                     {shown.length === 0 && <div className={styles.hint}>{t("Consist.NoMatches", "No cars match.")}</div>}
                 </VC.Scrollable>
+                {carOut !== "none" && (
+                    <div className={c(styles.removeOverlay, carOut === "over" ? styles.removeOverlayOn : "")}>
+                        {t("Consist.DropToRemove", "Drop here to remove")}
+                    </div>
+                )}
+                </div>
             </div>
         </div>
     );

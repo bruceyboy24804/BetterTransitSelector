@@ -446,6 +446,39 @@
     height: 360rem;
 }
 
+.catalogueZone {
+    position: relative;
+}
+
+// Click-through, so a release still reaches the document's mouseup.
+.removeOverlay {
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: 0;
+    bottom: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    pointer-events: none;
+    color: #fff;
+    font-size: 16rem;
+    background-color: rgba(0, 0, 0, 0.65);
+    border: 2px dashed rgba(255, 255, 255, 0.4);
+}
+
+.removeOverlayOn {
+    background-color: rgba(170, 40, 40, 0.75);
+    border-color: rgba(255, 255, 255, 0.9);
+}
+
+.cardFooter {
+    display: flex;
+    flex-direction: row;
+    justify-content: flex-end;
+    margin-top: 4rem;
+}
+
 .catalogueRow {
     display: flex;
     flex-direction: row;
